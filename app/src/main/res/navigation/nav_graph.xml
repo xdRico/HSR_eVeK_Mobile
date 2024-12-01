@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/loadingConnectionFragment">
+
+    <fragment
+        android:id="@+id/FirstFragment"
+        android:name="de.ehealth.evek.mobile.frontend.FirstFragment"
+        android:label="@string/first_fragment_label"
+        tools:layout="@layout/fragment_first">
+
+        <action
+            android:id="@+id/action_FirstFragment_to_SecondFragment"
+            app:destination="@id/SecondFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/SecondFragment"
+        android:name="de.ehealth.evek.mobile.frontend.SecondFragment"
+        android:label="@string/second_fragment_label"
+        tools:layout="@layout/fragment_second">
+
+        <action
+            android:id="@+id/action_SecondFragment_to_FirstFragment"
+            app:destination="@id/FirstFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/loadingConnectionFragment"
+        android:name="de.ehealth.evek.mobile.frontend.LoadingConnectionFragment"
+        android:label="fragment_loading_connection"
+        tools:layout="@layout/fragment_loading_connection" >
+        <action
+            android:id="@+id/action_loadingConnectionFragment_to_loginUserFragment"
+            app:destination="@id/loginUserFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/loginUserFragment"
+        android:name="de.ehealth.evek.mobile.frontend.LoginUserFragment"
+        android:label="LoginUserFragment" >
+        <action
+            android:id="@+id/action_loginUserFragment_to_FirstFragment"
+            app:destination="@id/FirstFragment" />
+    </fragment>
+</navigation>

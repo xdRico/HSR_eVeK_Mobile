@@ -1,6 +1,5 @@
 package de.ehealth.evek.mobile.network;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 
@@ -12,9 +11,9 @@ public class ServerConnection implements Runnable {
     private int serverPort = 12013;
     private boolean isInitialized = false;
 
-    public boolean initConnection() {
+    public boolean initConnection() throws IllegalStateException{
         if(isInitialized)
-             return false;
+             throw new IllegalStateException("Connection already initialized!");
         Log.sendMessage("Starting up Network Thread...");
         networkThread = new Thread(this);
         networkThread.setName("ServerConnection-" + serverAddress);
@@ -44,10 +43,10 @@ public class ServerConnection implements Runnable {
     public void run() {
         Log.sendMessage("Trying to initialize server connection...");
         try{
-            server = new Socket(serverAddress, serverPort);
+            server = new Socket(InetAddress.getByName(serverAddress), serverPort);
             isInitialized = true;
             Log.sendMessage("Server connection has been successfully initialized!");
-        }catch(IOException e){
+        }catch(Exception e){
             Log.sendMessage("Server connection could not be initialized!");
             Log.sendException(e);
         }

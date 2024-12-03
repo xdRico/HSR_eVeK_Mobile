@@ -3,66 +3,78 @@ package de.ehealth.evek.mobile.frontend;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
+import java.util.Locale;
 
 import de.ehealth.evek.evek.mobile.R;
+import de.ehealth.evek.mobile.core.ClientMain;
+import de.ehealth.evek.mobile.network.IsInitializedListener;
+import de.ehealth.evek.mobile.network.ServerConnection;
+import de.ehealth.evek.mobile.util.Log;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link LoadingConnectionFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class LoadingConnectionFragment extends Fragment {
+public class LoadingConnectionFragment extends Fragment implements IsInitializedListener {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    boolean isInitialized;
+    private ClientMain main;
+    private TextView connectCounter;
+    private NavController navController;
 
     public LoadingConnectionFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment LoadingConnectionFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static LoadingConnectionFragment newInstance(String param1, String param2) {
-        LoadingConnectionFragment fragment = new LoadingConnectionFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
+
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_loading_connection, container, false);
+        main = ClientMain.instance();
+        ServerConnection connection = main.getServerConnection();
+        connection.addIsInitializedListener(this);
+        main.initServerConnection();
+        View view = inflater.inflate(R.layout.fragment_loading_connection, container, false);
+        connectCounter = view.findViewById(R.id.tv_loadConnection_count);
+        setConnectCounter();
+        navController = NavHostFragment.findNavController(LoadingConnectionFragment.this);
+        return view;
+    }
+
+    @Override
+    public void onValueChanged(boolean isInitialized) {
+        if(navController == null)
+            navController = NavHostFragment.findNavController(LoadingConnectionFragment.this);
+        if(navController.getCurrentDestination() == null
+                || navController.getCurrentDestination().getId() != R.id.loadingConnectionFragment) return;
+        if(isInitialized) {
+            if(getActivity() == null)
+                Log.sendException(new RuntimeException("getActivity() is null!"));
+            getActivity().runOnUiThread(() -> navController.navigate(R.id.action_loadingConnectionFragment_to_loginUserFragment));
+        } else {
+            setConnectCounter();
+        }
+    }
+
+    private void setConnectCounter(){
+        if(connectCounter == null)
+            return;
+        ServerConnection connection = main.getServerConnection();
+        if(getActivity() == null)
+            Log.sendException(new RuntimeException("getActivity() is null!"));
+        getActivity().runOnUiThread(() -> connectCounter.setText(String.format(Locale.getDefault(),
+                "(%d/%d)",
+                connection.getTimesTriedToConnect(),
+                connection.getTimesToTryConnect())));
     }
 }

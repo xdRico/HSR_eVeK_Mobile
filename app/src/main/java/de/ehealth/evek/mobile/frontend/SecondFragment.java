@@ -9,11 +9,10 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
-import de.ehealth.evek.evek.mobile.R;
-import de.ehealth.evek.evek.mobile.databinding.FragmentSecondBinding;
+import de.ehealth.evek.mobile.databinding.FragmentSecondBinding;
+import de.ehealth.evek.mobile.R;
 
 public class SecondFragment extends Fragment {
-
     private FragmentSecondBinding binding;
 
     @Override
@@ -32,7 +31,7 @@ public class SecondFragment extends Fragment {
 
         binding.buttonSecond.setOnClickListener(v ->
                 NavHostFragment.findNavController(SecondFragment.this)
-                        .navigate(R.id.action_SecondFragment_to_FirstFragment)
+                        .navigate(R.id.action_SecondFragment_to_mainPageFragment)
         );
     }
 

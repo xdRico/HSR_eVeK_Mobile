@@ -16,10 +16,9 @@
         android:inputType="textPassword"
         android:textAlignment="center"
         android:textSize="22sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/cb_login_stay_logged_in"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" />
 
     <EditText
         android:id="@+id/tb_login_user"
@@ -40,12 +39,74 @@
         android:id="@+id/btn_login_login"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="16dp"
         android:contentDescription="@string/desc_fragment_login_user_tb_login_button"
         android:text="@string/content_fragment_login_user_btn_login_login"
         android:textSize="22sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tb_login_pass" />
+        app:layout_constraintTop_toBottomOf="@+id/cb_login_stay_logged_in" />
+
+    <CheckBox
+        android:id="@+id/cb_login_stay_logged_in"
+        android:layout_width="wrap_content"
+        android:layout_height="32dp"
+        android:checked="false"
+        android:text="@string/content_fragment_login_user_cb_login_stay_logged_in"
+        android:textAlignment="center"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/ib_login_view_password"
+        android:layout_width="30dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="8dp"
+        android:background="#000000ff"
+        android:contentDescription="@string/desc_fragment_login_user_ib_login_view_password"
+        android:src="@drawable/baseline_remove_red_eye_24"
+        app:layout_constraintBottom_toTopOf="@+id/cb_login_stay_logged_in"
+        app:layout_constraintStart_toEndOf="@+id/tb_login_pass"
+        app:layout_constraintTop_toTopOf="@+id/tb_login_pass"
+        app:layout_constraintVertical_bias="0.099" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_login_error_box"
+        android:layout_width="324dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:background="@color/design_evek_background_error"
+        android:backgroundTintMode="src_over"
+        android:padding="10dp"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btn_login_login">
+
+        <TextView
+            android:id="@+id/tv_login_error"
+            android:layout_width="280dp"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginEnd="1dp"
+            android:contentDescription="@string/desc_fragment_login_user_iv_login_err_symbol"
+            android:src="@drawable/baseline_error_outline_24_red"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_login_error"
+            app:layout_constraintEnd_toStartOf="@+id/tv_login_error"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

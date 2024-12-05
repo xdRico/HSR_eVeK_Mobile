@@ -8,7 +8,7 @@ ext {
 }
 
 android {
-    namespace 'de.ehealth.evek.evek.mobile'
+    namespace 'de.ehealth.evek.mobile'
     compileSdk 34
 
     defaultConfig {
@@ -28,7 +28,7 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_21
+        sourceCompatibility JavaVersion.VERSION_19
         targetCompatibility JavaVersion.VERSION_21
     }
     buildFeatures {
@@ -42,10 +42,8 @@ dependencies {
     implementation libs.constraintlayout
     implementation libs.navigation.fragment
     implementation libs.navigation.ui
-    implementation files('lib/Server_v0.1.0.jar')
-    testImplementation libs.junit
+    implementation files('lib/API_v0.1.2.jar')
     androidTestImplementation libs.ext.junit
     androidTestImplementation libs.espresso.core
     implementation libs.core
-    implementation libs.zxing.android.embedded
 }

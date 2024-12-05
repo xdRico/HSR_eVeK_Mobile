@@ -12,16 +12,15 @@
     <string name="autoFillHint_fragment_login_user_tb_login_pass">password</string>
     <string name="autoFillHint_fragment_login_user_tb_login_user">username</string>
     <string name="content_fragment_login_user_btn_login_login">Login</string>
+    <string name="content_fragment_login_user_cb_login_stay_logged_in">Stay logged in</string>
+    <string name="desc_fragment_login_user_iv_login_err_symbol">Symbol showing, that an Error occurred</string>
     <string name="desc_fragment_login_user_tb_login_button">Login Button</string>
     <string name="hint_fragment_login_user_tb_login_pass">Password</string>
     <string name="hint_fragment_login_user_tb_login_user">Username</string>
 
-    <!-- Strings used for LoadingConnectionFragment -->
-    <string name="first_fragment_label">First Fragment</string>
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="lorem_ipsum">
         Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam in scelerisque sem. Mauris
         volutpat, dolor id interdum ullamcorper, risus dolor egestas lectus, sit amet mattis purus
@@ -58,4 +57,6 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
+    <string name="desc_fragment_login_user_ib_login_view_password">Button to show the typed password</string>
+
 </resources>

@@ -13,27 +13,21 @@ import android.widget.TextView;
 
 import java.util.Locale;
 
-import de.ehealth.evek.evek.mobile.R;
+import de.ehealth.evek.api.util.Log;
+
 import de.ehealth.evek.mobile.core.ClientMain;
 import de.ehealth.evek.mobile.network.IsInitializedListener;
 import de.ehealth.evek.mobile.network.ServerConnection;
-import de.ehealth.evek.mobile.util.Log;
+import de.ehealth.evek.mobile.R;
 
 public class LoadingConnectionFragment extends Fragment implements IsInitializedListener {
-
     private ClientMain main;
     private TextView connectCounter;
     private NavController navController;
 
-    public LoadingConnectionFragment() {
-        // Required empty public constructor
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-
     }
 
     @Override
@@ -52,7 +46,7 @@ public class LoadingConnectionFragment extends Fragment implements IsInitialized
     }
 
     @Override
-    public void onValueChanged(boolean isInitialized) {
+    public void onInitializedStateChanged(boolean isInitialized) {
         if(navController == null)
             navController = NavHostFragment.findNavController(LoadingConnectionFragment.this);
         if(navController.getCurrentDestination() == null

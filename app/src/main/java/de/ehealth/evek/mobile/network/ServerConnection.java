@@ -8,18 +8,33 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import de.ehealth.evek.mobile.util.Log;
+import de.ehealth.evek.api.entity.User;
+import de.ehealth.evek.api.exception.WrongCredentialsException;
+import de.ehealth.evek.api.network.interfaces.IComClientReceiver;
+import de.ehealth.evek.api.network.interfaces.IComClientSender;
+import de.ehealth.evek.api.network.ComClientReceiver;
+import de.ehealth.evek.api.network.ComClientSender;
+import de.ehealth.evek.mobile.exception.NoValidUserRoleException;
+import de.ehealth.evek.mobile.exception.UserLoggedInThrowable;
+
+import de.ehealth.evek.api.util.Log;
+
 public class ServerConnection implements Runnable, IsInitializedListener {
-    private Socket server;
-    private Thread networkThread;
-    private String serverAddress = "localhost";
     private int serverPort = 12013;
-    private int timesToTryConnect = 20;
+    private int timesToTryConnect = 15;
     private int timesTriedToConnect = 0;
-    private int msToWaitWhileConnecting = 5000;
+    private int msToWaitWhileConnecting = 9500;
     private int msToWaitForReconnect = 500;
     private boolean isInitialized;
+    private String serverAddress = "localhost";
+
+    private IComClientReceiver receiver;
+    private IComClientSender sender;
+    private Socket server;
+    private Thread networkThread;
+    private User loginUser;
     private final List<IsInitializedListener> isInitializedListeners = new ArrayList<>();
+    private final List<IsLoggedInListener> isLoggedInListeners = new ArrayList<>();
 
     public void initConnection() throws IllegalStateException{
         if(isInitialized)
@@ -43,17 +58,18 @@ public class ServerConnection implements Runnable, IsInitializedListener {
     @Override
     public void run() {
         Log.sendMessage("Trying to initialize server connection...");
-
+        addIsInitializedListener(this);
         while(timesTriedToConnect < timesToTryConnect){
 
-            try (Socket socket = new Socket()) {
+            try {
+                server = new Socket();
                 SocketAddress endpoint = new InetSocketAddress(serverAddress, serverPort);
-                socket.connect(endpoint, msToWaitWhileConnecting);
+                server.connect(endpoint, msToWaitWhileConnecting);
+                sender = new ComClientSender(server);
+                receiver = new ComClientReceiver(server);
                 setInitialized(true);
                 Log.sendMessage("Server connection has been successfully initialized!");
-                this.server = socket;
                 break;
-            //} catch(SocketTimeoutException e){
             } catch (IOException e) {
                 timesTriedToConnect++;
                 setInitialized(false);
@@ -73,19 +89,30 @@ public class ServerConnection implements Runnable, IsInitializedListener {
     }
 
     public void addIsInitializedListener(IsInitializedListener listener){
-        isInitializedListeners.add(listener);
+        if(!isInitializedListeners.contains(listener))
+            isInitializedListeners.add(listener);
     }
     public void removeIsInitializedListener(IsInitializedListener listener){
-        isInitializedListeners.remove(listener);
+        if(!isInitializedListeners.contains(listener))
+            isInitializedListeners.remove(listener);
     }
+    public void addIsLoggedInListener(IsLoggedInListener listener){
+        if(!isLoggedInListeners.contains(listener))
+            isLoggedInListeners.add(listener);
+    }
+    public void removeIsLoggedInListener(IsLoggedInListener listener){
+        if(!isLoggedInListeners.contains(listener))
+            isLoggedInListeners.remove(listener);
+    }
+
     private void setInitialized(boolean isInitialized){
         this.isInitialized = isInitialized;
         for(IsInitializedListener listener : isInitializedListeners){
-            listener.onValueChanged(isInitialized);
+            listener.onInitializedStateChanged(isInitialized);
         }
     }
     @Override
-    public void onValueChanged(boolean isInitialized) {
+    public void onInitializedStateChanged(boolean isInitialized) {
         if(isInitialized)
             Log.sendMessage("Network Thread has been successfully started up!");
         else{
@@ -98,5 +125,38 @@ public class ServerConnection implements Runnable, IsInitializedListener {
     }
     public int getTimesToTryConnect(){
         return timesToTryConnect;
+    }
+
+    public void tryLogin(String username, String password){
+        new Thread (() -> {
+            Throwable t = new WrongCredentialsException();
+            try {
+                this.sender.loginUser(username, password);
+                User loginUser = this.receiver.receiveUser();
+                if(loginUser != null) {
+                    t = switch (loginUser.role()) {
+                        case HealthcareAdmin, HealthcareDoctor, HealthcareUser, InsuranceAdmin,
+                             InsuranceUser ->
+                                new NoValidUserRoleException(loginUser.role(), "Mobile (App) Login");
+                        case TransportAdmin, TransportDoctor, TransportInvoice, TransportUser,
+                             SuperUser -> {
+                            this.loginUser = loginUser;
+                            yield new UserLoggedInThrowable(loginUser);
+                        }
+                    };
+                }
+            } catch(Exception e){
+                t = e;
+            }
+
+            if(!(t instanceof UserLoggedInThrowable)) {
+                this.loginUser = null;
+                Log.sendMessage("User " + username + " could not be logged in!");
+                Log.sendException(t);
+            }
+            for(IsLoggedInListener listener : isLoggedInListeners)
+                listener.onLoginStateChanged(t);
+        }).start();
+
     }
 }

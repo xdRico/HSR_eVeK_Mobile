@@ -6,24 +6,13 @@
     app:startDestination="@id/loadingConnectionFragment">
 
     <fragment
-        android:id="@+id/FirstFragment"
-        android:name="de.ehealth.evek.mobile.frontend.FirstFragment"
-        android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first">
-
-        <action
-            android:id="@+id/action_FirstFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment" />
-    </fragment>
-    <fragment
         android:id="@+id/SecondFragment"
         android:name="de.ehealth.evek.mobile.frontend.SecondFragment"
         android:label="@string/second_fragment_label"
         tools:layout="@layout/fragment_second">
-
         <action
-            android:id="@+id/action_SecondFragment_to_FirstFragment"
-            app:destination="@id/FirstFragment" />
+            android:id="@+id/action_SecondFragment_to_mainPageFragment"
+            app:destination="@id/mainPageFragment" />
     </fragment>
     <fragment
         android:id="@+id/loadingConnectionFragment"
@@ -36,5 +25,18 @@
     <fragment
         android:id="@+id/loginUserFragment"
         android:name="de.ehealth.evek.mobile.frontend.LoginUserFragment"
-        tools:layout="@layout/fragment_login_user" />
+        tools:layout="@layout/fragment_login_user" >
+        <action
+            android:id="@+id/action_loginUserFragment_to_mainPageFragment"
+            app:destination="@id/mainPageFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/mainPageFragment"
+        android:name="de.ehealth.evek.mobile.frontend.MainPageFragment"
+        android:label="fragment_main_page"
+        tools:layout="@layout/fragment_main_page" >
+        <action
+            android:id="@+id/action_mainPageFragment_to_SecondFragment"
+            app:destination="@id/SecondFragment" />
+    </fragment>
 </navigation>

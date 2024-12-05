@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="serverConnection.address">localhost</string>
-    <integer name="serverConnection.port">12013</integer>
+    <string name="evek.connection.server.address">localhost</string>
+    <integer name="evek.connection.server.port">12013</integer>
 </resources>

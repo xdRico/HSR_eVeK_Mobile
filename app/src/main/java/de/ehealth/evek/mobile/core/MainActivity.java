@@ -9,8 +9,8 @@ import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
-import de.ehealth.evek.evek.mobile.R;
-import de.ehealth.evek.evek.mobile.databinding.ActivityMainBinding;
+import de.ehealth.evek.mobile.databinding.ActivityMainBinding;
+import de.ehealth.evek.mobile.R;
 
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         ClientMain.instance();
 
-        de.ehealth.evek.evek.mobile.databinding.ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
+        ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.toolbar);

@@ -1,60 +1,111 @@
 package de.ehealth.evek.mobile.frontend;
 
+import android.graphics.Color;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 
-import de.ehealth.evek.evek.mobile.R;
+import de.ehealth.evek.mobile.core.ClientMain;
+import de.ehealth.evek.mobile.exception.UserLoggedInThrowable;
+import de.ehealth.evek.mobile.network.IsLoggedInListener;
+import de.ehealth.evek.mobile.network.ServerConnection;
+import de.ehealth.evek.mobile.R;
 
-public class LoginUserFragment extends Fragment {
+public class LoginUserFragment extends Fragment implements IsLoggedInListener {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public LoginUserFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment LoadingConnectionFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static LoginUserFragment newInstance(String param1, String param2) {
-        LoginUserFragment fragment = new LoginUserFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private String username = null;
+    private String password = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
-
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        //TODO Read stored login data
+        if (username != null && password != null
+            && !username.isBlank() && !password.isBlank()){
+            /*TODO assign stored login Data
+                this.username = username;
+                this.password = password;*/
+            tryLogin();
+        }
+
+        View view = inflater.inflate(R.layout.fragment_login_user, container, false);
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_login_user, container, false);
+        view.findViewById(R.id.btn_login_login).setOnClickListener(v -> tryLogin());
+        view.findViewById(R.id.ib_login_view_password).setOnTouchListener((v, event) -> {
+            boolean ret;
+            EditText pw = view.findViewById(R.id.tb_login_pass);
+            ret = switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN -> {
+                    pw.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
+                    yield true;
+                }
+                case MotionEvent.ACTION_UP -> {
+                    pw.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+                    yield true;
+                }
+                default -> false;
+            };
+            view.performClick();
+            return ret;
+        });
+
+        return view;
+    }
+    private void tryLogin() {
+        if(getView() == null)
+            return;
+        TextView tvUser = getView().findViewById(R.id.tb_login_user);
+        TextView tvPass = getView().findViewById(R.id.tb_login_pass);
+        username = tvUser.getText().toString();
+        password = tvPass.getText().toString();
+        if(username.isBlank())
+            tvUser.setHintTextColor(Color.argb(255, 255, 100, 100));
+        if(password.isBlank())
+            tvPass.setHintTextColor(Color.argb(255, 255, 100, 100));
+        if(username.isBlank() || password.isBlank())
+            return;
+        ServerConnection connect = ClientMain.instance().getServerConnection();
+        connect.addIsLoggedInListener(this);
+        connect.tryLogin(username, password);
+    }
+    @Override
+    public void onLoginStateChanged(Throwable loginState) {
+
+            if(getActivity() == null) return;
+            if(!(loginState instanceof UserLoggedInThrowable)){
+            getActivity().runOnUiThread(() -> {
+                if(getView() == null)
+                    return;
+                ((TextView) getView().findViewById(R.id.tv_login_error)).setText(loginState.toString());
+                getView().findViewById(R.id.cl_login_error_box).setVisibility(View.VISIBLE);
+            });
+            return;
+        }
+
+        if(getView() != null
+                && ((CheckBox) getView().findViewById(R.id.cb_login_stay_logged_in)).isChecked()){
+            //TODO store Login Data
+        }
+
+        NavController navController = NavHostFragment.findNavController(LoginUserFragment.this);
+        if(navController.getCurrentDestination() == null
+                || navController.getCurrentDestination().getId() != R.id.loginUserFragment) return;
+        getActivity().runOnUiThread(() -> navController.navigate(R.id.action_loginUserFragment_to_mainPageFragment));
     }
 }

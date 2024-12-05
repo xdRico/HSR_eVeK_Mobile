@@ -1,5 +1,5 @@
 package de.ehealth.evek.mobile.network;
 
 public interface IsInitializedListener{
-    void onValueChanged(boolean isInitialized);
+    void onInitializedStateChanged(boolean isInitialized);
 }

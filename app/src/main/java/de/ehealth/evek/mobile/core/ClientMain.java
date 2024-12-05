@@ -1,9 +1,9 @@
 package de.ehealth.evek.mobile.core;
 
+import de.ehealth.evek.api.util.Debug;
+import de.ehealth.evek.api.util.Log;
 
 import de.ehealth.evek.mobile.network.ServerConnection;
-import de.ehealth.evek.mobile.util.Debug;
-import de.ehealth.evek.mobile.util.Log;
 
 public class ClientMain {
     private static final int SERVER_PORT = 12013;

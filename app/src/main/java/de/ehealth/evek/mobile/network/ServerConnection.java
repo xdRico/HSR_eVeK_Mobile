@@ -4,16 +4,19 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.security.KeyPair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 import de.ehealth.evek.api.entity.User;
+import de.ehealth.evek.api.exception.EncryptionException;
 import de.ehealth.evek.api.exception.WrongCredentialsException;
 import de.ehealth.evek.api.network.interfaces.IComClientReceiver;
 import de.ehealth.evek.api.network.interfaces.IComClientSender;
 import de.ehealth.evek.api.network.ComClientReceiver;
 import de.ehealth.evek.api.network.ComClientSender;
+import de.ehealth.evek.api.network.ComEncryptionKey;
 import de.ehealth.evek.mobile.exception.NoValidUserRoleException;
 import de.ehealth.evek.mobile.exception.UserLoggedInThrowable;
 
@@ -68,13 +71,25 @@ public class ServerConnection implements Runnable, IsInitializedListener {
                 sender = new ComClientSender(server);
                 receiver = new ComClientReceiver(server);
                 setInitialized(true);
+                KeyPair keys = receiver.useEncryption();
+                sender.sendKey(new ComEncryptionKey(keys.getPublic()));
+                sender.setKeyToUse(receiver.receivePublicKey());
                 Log.sendMessage("Server connection has been successfully initialized!");
                 break;
+            } catch (EncryptionException e) {
+                Log.sendException(e);
+                Log.sendMessage("Connection not encrypted!");
+                throw new RuntimeException(e);
             } catch (IOException e) {
-                timesTriedToConnect++;
-                setInitialized(false);
+                try {
+                    server.close();
+                } catch(IOException ex){
+                    Log.sendMessage("Socket could not be closed!");
+                }
                 if(timesTriedToConnect < timesToTryConnect - 1){
                     try {
+                        timesTriedToConnect++;
+                        setInitialized(false);
                         //noinspection BusyWait
                         Thread.sleep(msToWaitForReconnect);
                     } catch (InterruptedException ex) {
@@ -82,8 +97,11 @@ public class ServerConnection implements Runnable, IsInitializedListener {
                     }
                     continue;
                 }
+                setInitialized(false);
                 Log.sendMessage(String.format(Locale.getDefault(),"Server connection failed to initialize %d times!", timesToTryConnect));
                 Log.sendException(e);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
             }
         }
     }

@@ -12,8 +12,8 @@ import java.util.Locale;
 import de.ehealth.evek.api.entity.User;
 import de.ehealth.evek.api.exception.EncryptionException;
 import de.ehealth.evek.api.exception.WrongCredentialsException;
-import de.ehealth.evek.api.network.interfaces.IComClientReceiver;
-import de.ehealth.evek.api.network.interfaces.IComClientSender;
+import de.ehealth.evek.api.network.IComClientReceiver;
+import de.ehealth.evek.api.network.IComClientSender;
 import de.ehealth.evek.api.network.ComClientReceiver;
 import de.ehealth.evek.api.network.ComClientSender;
 import de.ehealth.evek.api.network.ComEncryptionKey;
@@ -70,10 +70,8 @@ public class ServerConnection implements Runnable, IsInitializedListener {
                 server.connect(endpoint, msToWaitWhileConnecting);
                 sender = new ComClientSender(server);
                 receiver = new ComClientReceiver(server);
+                sender.useEncryption(receiver);
                 setInitialized(true);
-                KeyPair keys = receiver.useEncryption();
-                sender.sendKey(new ComEncryptionKey(keys.getPublic()));
-                sender.setKeyToUse(receiver.receivePublicKey());
                 Log.sendMessage("Server connection has been successfully initialized!");
                 break;
             } catch (EncryptionException e) {

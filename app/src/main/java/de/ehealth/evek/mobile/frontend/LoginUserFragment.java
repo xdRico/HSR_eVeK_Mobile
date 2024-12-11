@@ -16,10 +16,10 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
-import de.ehealth.evek.mobile.core.ClientMain;
+import de.ehealth.evek.mobile.core.MainActivity;
 import de.ehealth.evek.mobile.exception.UserLoggedInThrowable;
+import de.ehealth.evek.mobile.network.DataHandler;
 import de.ehealth.evek.mobile.network.IsLoggedInListener;
-import de.ehealth.evek.mobile.network.ServerConnection;
 import de.ehealth.evek.mobile.R;
 
 public class LoginUserFragment extends Fragment implements IsLoggedInListener {
@@ -30,6 +30,9 @@ public class LoginUserFragment extends Fragment implements IsLoggedInListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if(getActivity() != null)
+            ((MainActivity) getActivity()).setNavigationElementsVisible(false);
+
     }
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -80,9 +83,9 @@ public class LoginUserFragment extends Fragment implements IsLoggedInListener {
             tvPass.setHintTextColor(Color.argb(255, 255, 100, 100));
         if(username.isBlank() || password.isBlank())
             return;
-        ServerConnection connect = ClientMain.instance().getServerConnection();
-        connect.addIsLoggedInListener(this);
-        connect.tryLogin(username, password);
+        DataHandler handler = DataHandler.instance();
+        handler.addIsLoggedInListener(this);
+        handler.tryLogin(username, password);
     }
     @Override
     public void onLoginStateChanged(Throwable loginState) {

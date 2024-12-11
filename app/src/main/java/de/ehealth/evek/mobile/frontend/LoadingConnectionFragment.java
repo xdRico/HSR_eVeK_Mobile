@@ -15,33 +15,37 @@ import java.util.Locale;
 
 import de.ehealth.evek.api.util.Log;
 
-import de.ehealth.evek.mobile.core.ClientMain;
+import de.ehealth.evek.mobile.core.MainActivity;
+import de.ehealth.evek.mobile.network.DataHandler;
 import de.ehealth.evek.mobile.network.IsInitializedListener;
 import de.ehealth.evek.mobile.network.ServerConnection;
 import de.ehealth.evek.mobile.R;
 
 public class LoadingConnectionFragment extends Fragment implements IsInitializedListener {
-    private ClientMain main;
+    private DataHandler handler;
     private TextView connectCounter;
     private NavController navController;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        main = ClientMain.instance();
-        ServerConnection connection = main.getServerConnection();
-        connection.addIsInitializedListener(this);
-        main.initServerConnection();
+        handler = DataHandler.instance();
+        handler.getServerConnection().addIsInitializedListener(this);
+        handler.initServerConnection();
         View view = inflater.inflate(R.layout.fragment_loading_connection, container, false);
         connectCounter = view.findViewById(R.id.tv_loadConnection_count);
         setConnectCounter();
         navController = NavHostFragment.findNavController(LoadingConnectionFragment.this);
+        if(getActivity() != null)
+            ((MainActivity) getActivity()).setNavigationElementsVisible(false);
         return view;
     }
 
@@ -63,7 +67,7 @@ public class LoadingConnectionFragment extends Fragment implements IsInitialized
     private void setConnectCounter(){
         if(connectCounter == null)
             return;
-        ServerConnection connection = main.getServerConnection();
+        ServerConnection connection = handler.getServerConnection();
         if(getActivity() == null)
             Log.sendException(new RuntimeException("getActivity() is null!"));
         getActivity().runOnUiThread(() -> connectCounter.setText(String.format(Locale.getDefault(),

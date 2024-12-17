@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph_doctor"
+    app:startDestination="@id/doctorMainPageFragment">
+
+    <fragment
+        android:id="@+id/doctorMainPageFragment"
+        android:name="de.ehealth.evek.mobile.frontend.MainPageDoctorFragment"
+        android:label="fragment_doctor_main_page"
+        tools:layout="@layout/fragment_main_page_doctor" >
+        <action
+            android:id="@+id/action_doctorMainPageFragment_to_doctorEditorTransportDocFragment"
+            app:destination="@id/doctorEditorTransportDocFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/doctorEditorTransportDocFragment"
+        android:name="de.ehealth.evek.mobile.frontend.EditorTransportDocFragment"
+        android:label="fragment_editor_transport_doc"
+        tools:layout="@layout/fragment_editor_transport_doc" />
+</navigation>

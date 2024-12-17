@@ -37,7 +37,7 @@
         android:id="@+id/mainPageFragment"
         android:name="de.ehealth.evek.mobile.frontend.MainPageFragment"
         android:label="fragment_main_page"
-        tools:layout="@layout/fragment_main_page" >
+        tools:layout="@layout/fragment_main_page2" >
         <action
             android:id="@+id/action_mainPageFragment_to_SecondFragment"
             app:destination="@id/SecondFragment" />
@@ -47,7 +47,7 @@
     </fragment>
     <fragment
         android:id="@+id/editorFragment"
-        android:name="de.ehealth.evek.mobile.frontend.EditorFragment"
+        android:name="de.ehealth.evek.mobile.frontend.EditorTransportDocFragment"
         android:label="fragment_editor"
-        tools:layout="@layout/fragment_editor" />
+        tools:layout="@layout/fragment_editor_transport_doc" />
 </navigation>

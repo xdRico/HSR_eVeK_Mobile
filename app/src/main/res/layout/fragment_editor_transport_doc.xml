@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="de.ehealth.evek.mobile.frontend.EditorTransportDocFragment" >
+
+    <EditText
+        android:id="@+id/et_insurance_number"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="@string/hint_fragment_editor_transport_doc_et_insurance_number"
+        android:inputType="text"
+        app:layout_constraintStart_toStartOf="@+id/tv_patient_data"
+        app:layout_constraintTop_toBottomOf="@+id/tv_patient_data" />
+
+    <EditText
+        android:id="@+id/et_info"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:ems="10"
+        android:hint="@string/hint_fragment_editor_transport_doc_et_info"
+        android:inputType="text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/et_weekly_frequency" />
+
+    <EditText
+        android:id="@+id/et_weekly_frequency"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="@string/hint_fragment_editor_transport_doc_et_weekly_frequency"
+        android:inputType="text"
+        app:layout_constraintStart_toStartOf="@+id/textView5"
+        app:layout_constraintTop_toBottomOf="@+id/textView5" />
+
+    <EditText
+        android:id="@+id/et_end_date"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="@string/hint_fragment_editor_transport_doc_et_end_date"
+        android:inputType="text"
+        app:layout_constraintEnd_toEndOf="@+id/textView5"
+        app:layout_constraintTop_toBottomOf="@+id/textView5" />
+
+    <TextView
+        android:id="@+id/tv_patient_data"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:text="@string/content_fragment_editor_transport_doc_tv_patient_data"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_days_frequency"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="30dp"
+        android:text="@string/content_fragment_editor_transport_doc_tv_days_frequency"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/et_insurance_number" />
+
+    <EditText
+        android:id="@+id/et_start_date"
+        android:layout_width="140dp"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="@string/hint_fragment_editor_transport_doc_et_start_date"
+        android:inputType="date"
+        app:layout_constraintStart_toStartOf="@+id/tv_days_frequency"
+        app:layout_constraintTop_toBottomOf="@+id/tv_days_frequency" />
+
+    <TextView
+        android:id="@+id/textView5"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:text="@string/content_fragment_editor_transport_doc_tv_if_durational"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/et_start_date" />
+</androidx.constraintlayout.widget.ConstraintLayout>

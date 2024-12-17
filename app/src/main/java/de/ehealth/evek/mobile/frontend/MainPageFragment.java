@@ -24,7 +24,7 @@ public class MainPageFragment extends Fragment {
         // Inflate the layout for this fragment
         if(getActivity() != null)
             ((MainActivity) getActivity()).setNavigationElementsVisible(true);
-        return inflater.inflate(R.layout.fragment_main_page, container, false);
+        return inflater.inflate(R.layout.fragment_main_page2, container, false);
     }
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);

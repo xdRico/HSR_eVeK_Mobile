@@ -12,6 +12,7 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import de.ehealth.evek.api.entity.TransportDetails;
+import de.ehealth.evek.api.util.Debug;
 import de.ehealth.evek.api.util.Log;
 import de.ehealth.evek.mobile.databinding.ActivityMainBinding;
 import de.ehealth.evek.mobile.R;
@@ -73,11 +74,25 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onSupportNavigateUp() {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        if(navController.getPreviousBackStackEntry() == navController.getBackStackEntry(R.id.loginUserFragment)
-            || navController.getPreviousBackStackEntry() == navController.getBackStackEntry(R.id.loadingConnectionFragment))
+        try {
+            if (navController.getPreviousBackStackEntry() == navController.getBackStackEntry(R.id.loginUserFragment))
+                return false;
+        }catch(IllegalArgumentException e){
+            Debug.sendMessage("loginUserFragment ist nicht im backStack!");
+        }
+        try {
+            if (navController.getPreviousBackStackEntry() == navController.getBackStackEntry(R.id.loadingConnectionFragment))
+                return false;
+        }catch(IllegalArgumentException e){
+            Debug.sendMessage("loadingConnectionFragment ist nicht im backStack!");
+        }
+        try {
+            return NavigationUI.navigateUp(navController, appBarConfiguration)
+                    || super.onSupportNavigateUp();
+        }catch(Exception e){
+            Log.sendException(e);
             return false;
-        return NavigationUI.navigateUp(navController, appBarConfiguration)
-                || super.onSupportNavigateUp();
+        }
     }
 
     public boolean setNavigationElementsVisible(boolean enable){

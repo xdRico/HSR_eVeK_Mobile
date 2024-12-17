@@ -18,6 +18,8 @@
     <string name="hint_fragment_login_user_tb_login_pass">Password</string>
     <string name="hint_fragment_login_user_tb_login_user">Username</string>
 
+    <string name="content_fragment_main_page_doctor_tv_field_transport_doc">Transportschein</string>
+
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
@@ -69,5 +71,24 @@
     <string name="login_failed">"Login failed"</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="content_fragment_main_page_doctor_tv_field_transport">Fahrten</string>
+    <string name="content_fragment_main_page_doctor_btn_transport_doc_create">Erstellen</string>
+    <string name="content_fragment_main_page_doctor_btn_transport_doc_edit">Bearbeiten</string>
+    <string name="content_fragment_main_page_doctor_btn_transport_edit">Bearbeiten</string>
+    <string name="content_fragment_main_page_doctor_btn_transport_create">Erstellen</string>
 
+    <string name="content_fragment_editor_transport_doc_tv_patient_data">Patientendaten</string>
+    <string name="content_fragment_editor_transport_doc_tv_reason">1. Grund der Beförderung</string>
+    <string name="content_fragment_editor_transport_doc_tv_days_frequency">2. Behandlungstage/Behandlungsfrequenz und nächsterreichbare, geeignete Behandlungsstätte</string>
+    <string name="content_fragment_editor_transport_doc_tv_type">3. Art und Ausstattung der Beförderung</string>
+    <string name="content_fragment_editor_transport_doc_tv_additional">4. Begründung/Sonstiges</string>
+    <string name="content_fragment_editor_transport_doc_tv_additional_info">(z.B. Datum Aufnahme Krankenhaus,
+        Gewicht bei Schwergewichttransport, Wartezeit, Gemeinschaftsfahrt, Ortsangabe, wenn Beförderung nicht von/zur Wohnung stattfindet)</string>
+
+    <string name="hint_fragment_editor_transport_doc_et_insurance_number">Vers.-nummer</string>
+    <string name="hint_fragment_editor_transport_doc_et_start_date">Startdatum</string>
+    <string name="hint_fragment_editor_transport_doc_et_end_date">Enddatum</string>
+    <string name="hint_fragment_editor_transport_doc_et_weekly_frequency">Fahrten pro Woche</string>
+    <string name="hint_fragment_editor_transport_doc_et_info">Weitere Informationen</string>
+    <string name="content_fragment_editor_transport_doc_tv_if_durational">Wenn Mehrfachtransport:</string>
 </resources>

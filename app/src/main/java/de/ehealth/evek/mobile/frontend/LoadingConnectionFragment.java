@@ -44,7 +44,7 @@ public class LoadingConnectionFragment extends Fragment implements IsInitialized
         connectCounter = view.findViewById(R.id.tv_loadConnection_count);
         setConnectCounter();
         navController = NavHostFragment.findNavController(LoadingConnectionFragment.this);
-        if(getActivity() != null)
+        if(getActivity() != null && getActivity() instanceof MainActivity)
             ((MainActivity) getActivity()).setNavigationElementsVisible(false);
         return view;
     }

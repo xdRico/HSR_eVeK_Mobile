@@ -15,6 +15,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
+import androidx.navigation.NavGraph;
 import androidx.navigation.fragment.NavHostFragment;
 
 import de.ehealth.evek.mobile.core.MainActivity;
@@ -31,7 +32,7 @@ public class LoginUserFragment extends Fragment implements IsLoggedInListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(getActivity() != null)
+        if(getActivity() != null && getActivity() instanceof MainActivity)
             ((MainActivity) getActivity()).setNavigationElementsVisible(false);
 
     }
@@ -91,8 +92,8 @@ public class LoginUserFragment extends Fragment implements IsLoggedInListener {
     @Override
     public void onLoginStateChanged(Throwable loginState) {
 
-            if(getActivity() == null) return;
-            if(!(loginState instanceof UserLoggedInThrowable)){
+        if(getActivity() == null) return;
+        if(!(loginState instanceof UserLoggedInThrowable)){
             getActivity().runOnUiThread(() -> {
                 if(getActivity() == null){
                     if(getView() == null)
@@ -113,10 +114,19 @@ public class LoginUserFragment extends Fragment implements IsLoggedInListener {
                 && ((CheckBox) getView().findViewById(R.id.cb_login_stay_logged_in)).isChecked()){
             //TODO store Login Data
         }
-
         NavController navController = NavHostFragment.findNavController(LoginUserFragment.this);
+        NavGraph newNavGraph = switch(DataHandler.instance().getLoginUser().role()) {
+            case HealthcareDoctor, TransportDoctor, SuperUser ->
+                navController.getNavInflater().inflate(R.navigation.nav_graph_doctor);
+            case TransportUser ->
+                navController.getNavInflater().inflate(R.navigation.nav_graph_user);
+            default -> throw new RuntimeException("Invalid user Role - how did we get here??");
+        };
+
+        getActivity().runOnUiThread(() -> navController.setGraph(newNavGraph));
+        /*NavController navController = NavHostFragment.findNavController(LoginUserFragment.this);
         if(navController.getCurrentDestination() == null
                 || navController.getCurrentDestination().getId() != R.id.loginUserFragment) return;
-        getActivity().runOnUiThread(() -> navController.navigate(R.id.action_loginUserFragment_to_mainPageFragment));
+        getActivity().runOnUiThread(() -> navController.navigate(R.id.action_loginUserFragment_to_mainPageFragment));*/
     }
 }

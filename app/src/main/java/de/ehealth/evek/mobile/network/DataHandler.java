@@ -22,7 +22,9 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
     private User loginUser;
 
     private static final int SERVER_PORT = 12013;
+    //private static final String SERVER_ADDRESS = "192.168.1.9";
     private static final String SERVER_ADDRESS = "192.168.1.6";
+    //private static final String SERVER_ADDRESS = "192.168.56.1";
     private IComClientReceiver receiver;
     private IComClientSender sender;
     private final ServerConnection serverConnection = new ServerConnection();
@@ -74,6 +76,10 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
             isLoggedInListeners.remove(listener);
     }
 
+    public User getLoginUser(){
+        return loginUser;
+    }
+
     public void tryLogin(String username, String password){
         new Thread (() -> {
             Throwable t = new WrongCredentialsException();
@@ -82,11 +88,10 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
                 User loginUser = this.receiver.receiveUser();
                 if(loginUser != null) {
                     t = switch (loginUser.role()) {
-                        case HealthcareAdmin, HealthcareDoctor, HealthcareUser, InsuranceAdmin,
-                             InsuranceUser ->
+                        case HealthcareAdmin, HealthcareUser, InsuranceAdmin,
+                             InsuranceUser, TransportAdmin, TransportInvoice ->
                                 new NoValidUserRoleException(loginUser.role(), "Mobile (App) Login");
-                        case TransportAdmin, TransportDoctor, TransportInvoice, TransportUser,
-                             SuperUser -> {
+                        case HealthcareDoctor, TransportDoctor, TransportUser, SuperUser -> {
                             this.loginUser = loginUser;
                             yield new UserLoggedInThrowable(loginUser);
                         }
@@ -100,7 +105,8 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
                 this.loginUser = null;
                 Log.sendMessage("User " + username + " could not be logged in!");
                 Log.sendException(t);
-            }
+            }else
+                Log.sendMessage("User " + username + " successfully logged in!");
             for(IsLoggedInListener listener : isLoggedInListeners)
                 listener.onLoginStateChanged(t);
         }).start();
@@ -112,7 +118,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      */
     @Override
     public void onLoginStateChanged(Throwable isLoggedIn) {
-        if(!(isLoggedIn instanceof UserLoggedInThrowable))
+        if (!(isLoggedIn instanceof UserLoggedInThrowable))
             return;
         loginUser = ((UserLoggedInThrowable) isLoggedIn).getUser();
     }

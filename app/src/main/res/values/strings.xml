@@ -13,12 +13,44 @@
     <string name="autoFillHint_fragment_login_user_tb_login_user">username</string>
     <string name="content_fragment_login_user_btn_login_login">Login</string>
     <string name="content_fragment_login_user_cb_login_stay_logged_in">Stay logged in</string>
-    <string name="desc_fragment_login_user_iv_login_err_symbol">Symbol showing, that an Error occurred</string>
     <string name="desc_fragment_login_user_tb_login_button">Login Button</string>
+    <string name="desc_fragment_login_user_iv_login_err_symbol">Symbol showing, that an Error occurred</string>
+    <string name="desc_fragment_login_user_ib_login_view_password">Button to show the typed password</string>
     <string name="hint_fragment_login_user_tb_login_pass">Password</string>
     <string name="hint_fragment_login_user_tb_login_user">Username</string>
 
+    <!-- Strings for MainPageDoctor -->
     <string name="content_fragment_main_page_doctor_tv_field_transport_doc">Transportschein</string>
+    <string name="content_fragment_main_page_doctor_tv_field_transport">Fahrten</string>
+    <string name="content_fragment_main_page_doctor_btn_transport_doc_create">Erstellen</string>
+    <string name="content_fragment_main_page_doctor_btn_transport_doc_edit">Bearbeiten</string>
+    <string name="content_fragment_main_page_doctor_btn_transport_edit">Bearbeiten</string>
+    <string name="content_fragment_main_page_doctor_btn_transport_create">Erstellen</string>
+    <string name="hint_fragment_main_page_doctor_btn_transport_create">Fahrt erstellen</string>
+    <string name="hint_fragment_main_page_doctor_btn_transport_doc_create">Transportschein erstellen</string>
+    <string name="hint_fragment_main_page_doctor_btn_transport_doc_edit">Transportschein bearbeiten</string>
+    <string name="hint_fragment_main_page_doctor_btn_transport_edit">Fahrt bearbeiten</string>
+
+    <!-- Strings for TransportDocumentEditor -->
+    <string name="content_fragment_editor_transport_doc_tv_patient_data">Patientendaten</string>
+    <string name="content_fragment_editor_transport_doc_tv_reason">1. Grund der Beförderung</string>
+    <string name="content_fragment_editor_transport_doc_tv_days_frequency">2. Behandlungstage/Behandlungsfrequenz und nächsterreichbare, geeignete Behandlungsstätte</string>
+    <string name="content_fragment_editor_transport_doc_tv_type">3. Art und Ausstattung der Beförderung</string>
+    <string name="content_fragment_editor_transport_doc_tv_additional">4. Begründung/Sonstiges</string>
+    <string name="content_fragment_editor_transport_doc_tv_additional_info">(z.B. Datum Aufnahme Krankenhaus,
+        Gewicht bei Schwergewichttransport, Wartezeit, Gemeinschaftsfahrt, Ortsangabe, wenn Beförderung nicht von/zur Wohnung stattfindet)</string>
+    <string name="content_fragment_editor_transport_doc_tv_if_durational">Bei Mehrfachtransport:</string>
+    <string name="content_fragment_editor_transport_doc_tv_patient_condition_info">Patientenzustand:</string>
+    <string name="content_fragment_editor_transport_doc_btn_save_transport_doc">Speichern</string>
+    <string name="hint_fragment_editor_transport_doc_et_insurance_number">Vers.-nummer</string>
+    <string name="hint_fragment_editor_transport_doc_et_start_date">Startdatum</string>
+    <string name="hint_fragment_editor_transport_doc_et_end_date">Enddatum</string>
+    <string name="hint_fragment_editor_transport_doc_et_weekly_frequency">Fahrten pro Woche</string>
+    <string name="hint_fragment_editor_transport_doc_tv_service_provider">Behandlungsstätte</string>
+    <string name="hint_fragment_editor_transport_doc_et_info">Weitere Informationen</string>
+
+
+
 
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
@@ -59,36 +91,5 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
-    <string name="desc_fragment_login_user_ib_login_view_password">Button to show the typed password</string>
-    <!-- Strings related to login -->
-    <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password</string>
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="welcome">"Welcome!"</string>
-    <string name="invalid_username">Not a valid username</string>
-    <string name="invalid_password">Password must be >5 characters</string>
-    <string name="login_failed">"Login failed"</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="content_fragment_main_page_doctor_tv_field_transport">Fahrten</string>
-    <string name="content_fragment_main_page_doctor_btn_transport_doc_create">Erstellen</string>
-    <string name="content_fragment_main_page_doctor_btn_transport_doc_edit">Bearbeiten</string>
-    <string name="content_fragment_main_page_doctor_btn_transport_edit">Bearbeiten</string>
-    <string name="content_fragment_main_page_doctor_btn_transport_create">Erstellen</string>
-
-    <string name="content_fragment_editor_transport_doc_tv_patient_data">Patientendaten</string>
-    <string name="content_fragment_editor_transport_doc_tv_reason">1. Grund der Beförderung</string>
-    <string name="content_fragment_editor_transport_doc_tv_days_frequency">2. Behandlungstage/Behandlungsfrequenz und nächsterreichbare, geeignete Behandlungsstätte</string>
-    <string name="content_fragment_editor_transport_doc_tv_type">3. Art und Ausstattung der Beförderung</string>
-    <string name="content_fragment_editor_transport_doc_tv_additional">4. Begründung/Sonstiges</string>
-    <string name="content_fragment_editor_transport_doc_tv_additional_info">(z.B. Datum Aufnahme Krankenhaus,
-        Gewicht bei Schwergewichttransport, Wartezeit, Gemeinschaftsfahrt, Ortsangabe, wenn Beförderung nicht von/zur Wohnung stattfindet)</string>
-
-    <string name="hint_fragment_editor_transport_doc_et_insurance_number">Vers.-nummer</string>
-    <string name="hint_fragment_editor_transport_doc_et_start_date">Startdatum</string>
-    <string name="hint_fragment_editor_transport_doc_et_end_date">Enddatum</string>
-    <string name="hint_fragment_editor_transport_doc_et_weekly_frequency">Fahrten pro Woche</string>
-    <string name="hint_fragment_editor_transport_doc_et_info">Weitere Informationen</string>
-    <string name="content_fragment_editor_transport_doc_tv_if_durational">Wenn Mehrfachtransport:</string>
+    <string name="autofillhint_fragment_editor_transport_doc_et_service_provider">HealthcareServiceProviderId</string>
 </resources>

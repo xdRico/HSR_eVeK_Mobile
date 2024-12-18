@@ -1,14 +1,23 @@
 package de.ehealth.evek.mobile.network;
 
+import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import de.ehealth.evek.api.entity.TransportDetails;
+import de.ehealth.evek.api.entity.TransportDocument;
 import de.ehealth.evek.api.entity.User;
+import de.ehealth.evek.api.exception.IllegalProcessException;
+import de.ehealth.evek.api.exception.ProcessingException;
 import de.ehealth.evek.api.exception.WrongCredentialsException;
 import de.ehealth.evek.api.network.IComClientReceiver;
 import de.ehealth.evek.api.network.IComClientSender;
 import de.ehealth.evek.api.type.Id;
+import de.ehealth.evek.api.type.PatientCondition;
+import de.ehealth.evek.api.type.TransportReason;
+import de.ehealth.evek.api.type.TransportationType;
 import de.ehealth.evek.api.util.Log;
 import de.ehealth.evek.mobile.exception.NoValidUserRoleException;
 import de.ehealth.evek.mobile.exception.UserLoggedInThrowable;
@@ -44,9 +53,6 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         serverConnection.initConnection();
     }
 
-    /**
-     * @param isInitialized
-     */
     @Override
     public void onInitializedStateChanged(boolean isInitialized) {
         if(!isInitialized)
@@ -113,13 +119,72 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
 
     }
 
-    /**
-     * @param isLoggedIn
-     */
     @Override
     public void onLoginStateChanged(Throwable isLoggedIn) {
         if (!(isLoggedIn instanceof UserLoggedInThrowable))
             return;
         loginUser = ((UserLoggedInThrowable) isLoggedIn).getUser();
+    }
+
+    public TransportDocument createTransportDocument(TransportDocument.Create cmd) throws ProcessingException {
+        try{
+            sender.sendTransportDocument(cmd);
+            return receiver.receiveTransportDocument();
+        }catch(Exception e){
+            Log.sendException(e);
+            throw new ProcessingException(e);
+        }
+    }
+
+    public static Date getDate(String input) throws IllegalProcessException {
+        String[] possibleFormats = {"dd.MM.yy", "dd.MM.yyyy", "yyyy-MM-dd", "MM/dd/yyyy"};
+        Date date = null;
+
+        for (String format : possibleFormats) {
+            try {
+                SimpleDateFormat dateFormat = new SimpleDateFormat(format, Locale.GERMANY);
+                date = new Date(dateFormat.parse(input).getTime());
+                System.out.println("Detected Format: " + format);
+                break; // Format gefunden, Schleife beenden
+            } catch (Exception ignored) {
+                // Format passt nicht, nächstes ausprobieren
+            }
+        }
+
+        if (date != null)
+            return date;
+        throw new IllegalProcessException(new IllegalArgumentException("No valid date format!"));
+    }
+
+    public static String getTransportationTypeString(TransportationType type){
+        return switch(type) {
+            case Taxi -> "Taxi/Mietwagen";
+            case KTW -> "KTW, da medizinisch-fachliche Betreuung und/oder Einrichtung notwendig ist (Begründung unter 4. erforderlich)";
+            case RTW -> "RTW";
+            case NAWorNEF -> "NAW/NEF";
+            case Other -> "andere (Spezifizierung unter 4. erforderlich)";
+        };
+    }
+
+    public static String getPatientConditionString(PatientCondition condition){
+        return switch(condition) {
+            case CarryingChair -> "Tragestuhl";
+            case WheelChair -> "Rollstuhl";
+            case LyingDown -> "liegend";
+        };
+    }
+
+    public static String getTransportReasonString(TransportReason reason){
+        return switch(reason) {
+            case EmergencyTransport -> "a1) Notfalltransport";
+            case FullPartStationary -> "a2) voll-/teilstationäre Krankenhausbehandlung";
+            case PrePostStationary -> "a3) vor-/nachstationäre Behandlung";
+            case AmbulantTaxi -> "b) ambulante Behandlung (nur Taxi/Mietwagen! - bei Merkzeichen \"aG\", \"Bl\" oder \"H\", Pflegegrad 3 mit dauerhafter Mobilitätsbeeinträchtigung, Pflegegrad 4 oder 5)";
+            case OtherPermitFree -> "c) anderer Grund (Genehmigungsfrei, z.B. Fahrten zu Hospizen)";
+            case HighFrequent -> "d1) hochfrequente Behandlung (Dialyse, onkol. Chemo- oder Strahlentherapie)";
+            case HighFrequentAlike -> "d2) vergleichbarer Ausnahmefall (wie d1, Begründung unter 4. erforderlich)";
+            case ContinuousImpairment -> "e) dauerhafte Mobilitätsbeeinträchtigung vergleichbar mit b und Behandlungsdauer mindestens 6 Monate (Begründung unter 4. erforderlich)";
+            case OtherKTW -> "f) anderer Grund für Fahrt mit KTW (z.B. fachgerechtes Lagern, Tragen, Heben erforderlich, Begründung unter 3. und ggf. 4. erforderlich)";
+        };
     }
 }

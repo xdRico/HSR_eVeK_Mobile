@@ -67,7 +67,6 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             return true;
         }
-
         return super.onOptionsItemSelected(item);
     }
 
@@ -117,14 +116,12 @@ public class MainActivity extends AppCompatActivity {
         options.setCaptureActivity(QRScannerActivity.class);
 
         barLauncher.launch(options);
-
     }
 
     final ActivityResultLauncher<ScanOptions> barLauncher = registerForActivityResult(new ScanContract(),  result ->
     {
         if(result.getContents() == null)
             return;
-
         new Thread(() -> {
             try {
                 TransportDetails created = DataHandler.instance().tryAssignTransport(result.getContents());
@@ -140,17 +137,26 @@ public class MainActivity extends AppCompatActivity {
 
             }catch(IllegalArgumentException e){
                 Log.sendException(e);
-                runOnUiThread(() -> {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    builder.setTitle("Error assigning Transport Provider!");
-                    builder.setMessage(e.getLocalizedMessage());
-                    builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).show();
-                });
+                exceptionAlert(e, "Error assigning Transport Provider!");
             }
-
         }).start();
-
-
-
     });
+
+    public void exceptionAlert(Throwable e, String title){
+        runOnUiThread(() -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle(title);
+            builder.setMessage(e.getLocalizedMessage());
+            builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).show();
+        });
+    }
+
+    public void informationAlert(String message, String title) {
+        runOnUiThread(() -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle(title);
+            builder.setMessage(message);
+            builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).show();
+        });
+    }
 }

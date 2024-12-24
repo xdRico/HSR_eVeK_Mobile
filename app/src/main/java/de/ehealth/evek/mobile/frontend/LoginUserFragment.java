@@ -26,29 +26,17 @@ import de.ehealth.evek.mobile.R;
 
 public class LoginUserFragment extends Fragment implements IsLoggedInListener {
 
-    private String username = null;
-    private String password = null;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(getActivity() != null && getActivity() instanceof MainActivity)
-            ((MainActivity) getActivity()).setNavigationElementsVisible(false);
 
+        if(getActivity() != null && getActivity() instanceof MainActivity)
+            ((MainActivity) getActivity()).setNavigation(false);
     }
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
-        //TODO Read stored login data
-        if (username != null && password != null
-            && !username.isBlank() && !password.isBlank()){
-            /*TODO assign stored login Data
-                this.username = username;
-                this.password = password;*/
-            tryLogin();
-        }
-
         View view = inflater.inflate(R.layout.fragment_login_user, container, false);
         // Inflate the layout for this fragment
         view.findViewById(R.id.btn_login_login).setOnClickListener(v -> tryLogin());
@@ -77,8 +65,8 @@ public class LoginUserFragment extends Fragment implements IsLoggedInListener {
             return;
         TextView tvUser = getView().findViewById(R.id.tb_login_user);
         TextView tvPass = getView().findViewById(R.id.tb_login_pass);
-        username = tvUser.getText().toString();
-        password = tvPass.getText().toString();
+        String username = tvUser.getText().toString();
+        String password = tvPass.getText().toString();
         if(username.isBlank())
             tvUser.setHintTextColor(Color.argb(255, 255, 100, 100));
         if(password.isBlank())
@@ -87,6 +75,7 @@ public class LoginUserFragment extends Fragment implements IsLoggedInListener {
             return;
         DataHandler handler = DataHandler.instance();
         handler.addIsLoggedInListener(this);
+        handler.storeNextUser(((CheckBox) getView().findViewById(R.id.cb_login_stay_logged_in)).isChecked());
         handler.tryLogin(username, password);
     }
     @Override
@@ -110,10 +99,6 @@ public class LoginUserFragment extends Fragment implements IsLoggedInListener {
             return;
         }
 
-        if(getView() != null
-                && ((CheckBox) getView().findViewById(R.id.cb_login_stay_logged_in)).isChecked()){
-            //TODO store Login Data
-        }
         NavController navController = NavHostFragment.findNavController(LoginUserFragment.this);
         NavGraph newNavGraph = switch(DataHandler.instance().getLoginUser().role()) {
             case HealthcareDoctor, TransportDoctor, SuperUser ->
@@ -124,9 +109,5 @@ public class LoginUserFragment extends Fragment implements IsLoggedInListener {
         };
 
         getActivity().runOnUiThread(() -> navController.setGraph(newNavGraph));
-        /*NavController navController = NavHostFragment.findNavController(LoginUserFragment.this);
-        if(navController.getCurrentDestination() == null
-                || navController.getCurrentDestination().getId() != R.id.loginUserFragment) return;
-        getActivity().runOnUiThread(() -> navController.navigate(R.id.action_loginUserFragment_to_mainPageFragment));*/
     }
 }

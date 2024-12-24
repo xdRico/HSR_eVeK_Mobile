@@ -11,6 +11,8 @@ import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -46,20 +48,12 @@ public class EditorTransportDocFragment extends Fragment implements RecyclerAdap
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if(getActivity() != null && getActivity() instanceof MainActivity)
-            ((MainActivity) getActivity()).setNavigationElementsVisible(true);
-
-
     }
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_editor_transport_doc, container, false);
-
-        if(getActivity() != null)
-            ((MainActivity) getActivity()).setNavigationElementsVisible(true);
-
 
         // data to populate the RecyclerView with
         ArrayList<TransportReason> transportReasons = new ArrayList<>(Arrays.asList(TransportReason.values()));
@@ -80,10 +74,7 @@ public class EditorTransportDocFragment extends Fragment implements RecyclerAdap
         recyclerView.setAdapter(transportationTypeAdapter);
 
 
-        view.findViewById(R.id.btn_save_transport_doc).setOnClickListener((v) -> {
-            if(getActivity() != null)
-                getActivity().runOnUiThread(() ->createTransportDoc(view));
-        });
+        view.findViewById(R.id.btn_save_transport).setOnClickListener((v) -> createTransportDoc(view));
 
         EditText insuranceNumber = view.findViewById(R.id.et_insurance_number);
         insuranceNumber.addTextChangedListener(new TextWatcher() {
@@ -166,13 +157,13 @@ public class EditorTransportDocFragment extends Fragment implements RecyclerAdap
                 info = COptional.of(infoStr);
 
             try{
-                startDate = DataHandler.getDate(((EditText) view.findViewById(R.id.et_start_date)).getText().toString());
+                startDate = DataHandler.getDate(((EditText) view.findViewById(R.id.et_transport_date)).getText().toString());
 
                 //startDate = Date.valueOf(((EditText) view.findViewById(R.id.et_start_date)).getText().toString());
             }catch(Exception e){
                 Log.sendException(e);
                 valid = false;
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_start_date)).setHintTextColor(Color.argb(255, 255, 100, 100)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_transport_date)).setHintTextColor(Color.argb(255, 255, 100, 100)));
             }
 
             if(!((EditText) view.findViewById(R.id.et_end_date)).getText().toString().isBlank()
@@ -217,7 +208,32 @@ public class EditorTransportDocFragment extends Fragment implements RecyclerAdap
                     || transportDocument == null)
                 return;
 
-            ((MainActivity) getActivity()).informationAlert("Transportschein wurde erfolgreich mit ID " + transportDocument.id().value() + " erstellt!", "Transportschein erstellt");
+            TransportDocument finalTransportDocument = transportDocument;
+            ((MainActivity) getActivity()).choiceAlert("Transportschein wurde erfolgreich mit ID " + transportDocument.id().value() + " erstellt! \n\r\n\rSoll ein Transport für den Transportschein erstellt werden?",
+                    "Transportschein wurde erstellt!", "Nein",
+                    (dialog, which) -> {
+                        if(getActivity() != null){
+
+                            NavController navController = NavHostFragment.findNavController(EditorTransportDocFragment.this);
+                            if(navController.getCurrentDestination() == null
+                                    || navController.getCurrentDestination().getId() != R.id.editorTransportDocFragment) return;
+                            navController.navigateUp();
+                        }
+                        dialog.dismiss();
+                    },
+                    "Ja",
+                    (dialog, which) -> {
+                        if(getActivity() != null){
+
+                            NavController navController = NavHostFragment.findNavController(EditorTransportDocFragment.this);
+                            if(navController.getCurrentDestination() == null
+                                    || navController.getCurrentDestination().getId() != R.id.editorTransportDocFragment) return;
+                            Bundle bundle = new Bundle();
+                            bundle.putString("transportDocumentID", finalTransportDocument.id().value());
+                            navController.navigate(R.id.action_doctorEditorTransportDocFragment_to_editorTransportCreateFragment, bundle);
+                        }
+                        dialog.dismiss();
+                    });
         }).start();
     }
 

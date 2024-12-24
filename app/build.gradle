@@ -43,6 +43,7 @@ dependencies {
     implementation libs.navigation.fragment
     implementation libs.navigation.ui
     implementation files('lib/API_v0.2.0.jar')
+    implementation libs.crypto
     implementation libs.activity
     implementation libs.annotation
     implementation libs.lifecycle.livedata.ktx

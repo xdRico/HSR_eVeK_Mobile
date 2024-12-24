@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    tools:context="de.ehealth.evek.mobile.frontend.EditorTransportCreateFragment">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/constraint_patient_data"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp">
+
+                <TextView
+                    android:id="@+id/tv_transport_data"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/content_fragment_editor_transport_tv_transport_data"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+
+                <EditText
+                    android:id="@+id/et_transport_doc_id"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:hint="@string/hint_fragment_editor_transport_et_transport_doc_id"
+                    android:importantForAutofill="no"
+                    android:inputType="text|textUri"
+                    android:maxLength="36"
+                    android:textAlignment="center"
+                    app:layout_constraintStart_toStartOf="@+id/tv_transport_data"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_transport_data"
+                    tools:ignore="TextFields" />
+
+                <EditText
+                    android:id="@+id/et_transport_date"
+                    android:layout_width="140dp"
+                    android:layout_height="50dp"
+                    android:ems="10"
+                    android:hint="@string/hint_fragment_editor_transport_et_transport_date"
+                    android:importantForAutofill="no"
+                    android:inputType="date"
+                    android:textAlignment="center"
+                    app:layout_constraintStart_toStartOf="@+id/et_transport_doc_id"
+                    app:layout_constraintTop_toBottomOf="@+id/et_transport_doc_id" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/constraint_save"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp"
+                android:paddingBottom="120dp">
+
+                <Button
+                    android:id="@+id/btn_save_transport"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="40dp"
+                    android:text="@string/content_fragment_editor_transport_btn_save_transport"
+                    app:layout_constraintEnd_toEndOf="@+id/constraint_save"
+                    app:layout_constraintStart_toStartOf="@+id/constraint_save"
+                    app:layout_constraintTop_toTopOf="@+id/constraint_save" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </LinearLayout>
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

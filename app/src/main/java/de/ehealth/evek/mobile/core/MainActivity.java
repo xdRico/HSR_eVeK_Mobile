@@ -1,5 +1,6 @@
 package de.ehealth.evek.mobile.core;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -12,6 +13,8 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 
 import de.ehealth.evek.api.entity.TransportDetails;
+import de.ehealth.evek.api.exception.IllegalProcessException;
+import de.ehealth.evek.api.exception.UserNotProvidedException;
 import de.ehealth.evek.api.util.Debug;
 import de.ehealth.evek.api.util.Log;
 import de.ehealth.evek.mobile.databinding.ActivityMainBinding;
@@ -34,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ClientMain.instance();
+        ClientMain.instance(this);
 
         ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
@@ -44,9 +47,12 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(binding.toolbar);
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+        navController.addOnDestinationChangedListener((controller, destination, arguments) ->
+                setQRScanEnabled(destination.getId() == R.id.mainPageDoctorFragment || destination.getId() == R.id.mainPageUserFragment));
         appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
         NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
-        setNavigationElementsVisible(false);
+        setNavigation(false);
+        setQRScanEnabled(false);
     }
 
     @Override
@@ -64,7 +70,22 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.btn_logout) {
+
+            choiceAlert("Durch das abmelden werden die aktuellen Transportscheine und Transporte aus der App entfernt und können nur noch über die IDs abgerufen werden!", "Abmelden?",
+                    "Nein, angemeldet bleiben!", "Ja, abmelden!", (dialog, var) -> {
+                        try{
+                            Log.sendMessage("Logging out user...");
+                            DataHandler.instance().logout();
+                            NavController controller = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+                            runOnUiThread(() -> controller.setGraph(controller.getNavInflater().inflate(R.navigation.nav_graph)));
+                            Log.sendMessage("Successfully logged out user!");
+                        } catch(IllegalProcessException e){
+                            if(!(e.getCause() instanceof UserNotProvidedException))
+                                Log.sendException(e);
+                        }
+                    });
+
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -94,18 +115,26 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public boolean setNavigationElementsVisible(boolean enable){
+    public boolean setQRScanEnabled(boolean elementVisible, String title){
         boolean ret = true;
-        if(getSupportActionBar() != null)
-            getSupportActionBar().setDisplayHomeAsUpEnabled(enable);
-        else ret = false;
-        int visibility = View.INVISIBLE;
-        if(enable)
-            visibility = View.VISIBLE;
+        if(getSupportActionBar() != null){
+            getSupportActionBar().setTitle(title);
+        } else ret = false;
         if(findViewById(R.id.fab_qr_scanner) != null)
-            findViewById(R.id.fab_qr_scanner).setVisibility(visibility);
+            findViewById(R.id.fab_qr_scanner).setVisibility(elementVisible ? View.VISIBLE : View.INVISIBLE);
         else ret = false;
         return ret;
+    }
+
+    public boolean setQRScanEnabled(boolean elementVisible){
+        return setQRScanEnabled(elementVisible, getString(R.string.app_name));
+    }
+
+    public boolean setNavigation(boolean elementVisible){
+        if(getSupportActionBar() == null)
+            return false;
+        getSupportActionBar().setDisplayHomeAsUpEnabled(elementVisible);
+        return true;
     }
 
     private void scanQRCode(){
@@ -127,15 +156,16 @@ public class MainActivity extends AppCompatActivity {
                 TransportDetails created = DataHandler.instance().tryAssignTransport(result.getContents());
                 Log.sendMessage(created.toString());
                 NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-                if(navController.getCurrentDestination() == null
-                        || navController.getCurrentDestination().getId() != R.id.mainPageFragment) return;
-                navController.navigate(R.id.action_mainPageFragment_to_editorFragment);
+                if(navController.getCurrentDestination() == null)
+                    return;
+                if(navController.getCurrentDestination().getId() == R.id.mainPageDoctorFragment)
+                    runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_editorTransportUpdateFragment));
                 /*Intent intent = new Intent(MainActivity.this, EditorActivity.class);
                 intent.putExtra("key", TransportDetails.class); //Optional parameters
                 startActivity(intent);*/
                 //TODO EDITOR
 
-            }catch(IllegalArgumentException e){
+            }catch(IllegalProcessException e){
                 Log.sendException(e);
                 exceptionAlert(e, "Error assigning Transport Provider!");
             }
@@ -157,6 +187,34 @@ public class MainActivity extends AppCompatActivity {
             builder.setTitle(title);
             builder.setMessage(message);
             builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).show();
+        });
+    }
+
+    public void choiceAlert(String message, String title, String buttonLeftText, DialogInterface.OnClickListener buttonLeftListener, String buttonRightText, DialogInterface.OnClickListener buttonRightListener) {
+        runOnUiThread(() -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle(title);
+            builder.setMessage(message);
+            builder.setNegativeButton(buttonLeftText, buttonLeftListener);
+            builder.setPositiveButton(buttonRightText, buttonRightListener);
+            builder.show();
+        });
+    }
+
+    public void choiceAlert(String message, String title, String buttonCancelText, String buttonConfirmText, DialogInterface.OnClickListener buttonConfirmListener) {
+        choiceAlert(message, title, buttonCancelText, (dialog, var) -> dialog.dismiss(), buttonConfirmText, buttonConfirmListener);
+    }
+
+    public void choiceAlert(String message, String title, String buttonLeftText, DialogInterface.OnClickListener buttonLeftListener,
+                            String buttonCenterText, DialogInterface.OnClickListener buttonCenterListener, String buttonRightText, DialogInterface.OnClickListener buttonRightListener) {
+        runOnUiThread(() -> {
+            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+            builder.setTitle(title);
+            builder.setMessage(message);
+            builder.setNegativeButton(buttonLeftText, buttonLeftListener);
+            builder.setNeutralButton(buttonCenterText, buttonCenterListener);
+            builder.setPositiveButton(buttonRightText, buttonRightListener);
+            builder.show();
         });
     }
 }

@@ -1,13 +1,14 @@
 [versions]
 agp = "8.7.3"
 core = "3.4.1"
+crypto = "1.1.0-alpha06"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 appcompat = "1.7.0"
 material = "1.12.0"
 constraintlayout = "2.2.0"
-navigationFragment = "2.8.4"
-navigationUi = "2.8.4"
+navigationFragment = "2.8.5"
+navigationUi = "2.8.5"
 zxing = "4.3.0"
 activity = "1.9.3"
 annotation = "1.9.1"
@@ -16,6 +17,7 @@ lifecycleViewmodelKtx = "2.8.7"
 
 [libraries]
 core = { module = "com.google.zxing:core", version.ref = "core" }
+crypto = { module = "androidx.security:security-crypto", version.ref = "crypto"}
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }

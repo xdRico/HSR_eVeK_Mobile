@@ -1,4 +1,4 @@
-package de.ehealth.evek.mobile;
+package de.ehealth.evek.mobile.frontend;
 
 import android.os.Bundle;
 
@@ -7,6 +7,8 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import de.ehealth.evek.mobile.R;
 
 public class MainPageUserFragment extends Fragment {
 

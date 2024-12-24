@@ -1,10 +1,14 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">e-VeK Mobile</string>
-    <string name="action_settings">Settings</string>
+    <string name="content_menu_btn_settings">Einstellungen</string>
+    <string name="content_menu_btn_logout">Ausloggen</string>
     <string name="action_scan_qr">Scan QR Code</string>
 
     <!-- Strings for LoadingConnectionFragment-->
     <string name="content_fragment_loading_connection_tv_init_connection" tools:ignore="TypographyEllipsis">Trying to initialize server connection...</string>
+    <string name="content_fragment_loading_connection_tv_init_connection_auto_login" tools:ignore="TypographyEllipsis">Trying to log in user from stored user data...</string>
+
+
     <string name="desc_fragment_loading_connection_tv_init_connection">TextView showing the current process in initializing the server connection</string>
     <string name="desc_fragment_loading_connection_tv_init_connection_count">TextView showing the current try count to connect to the Server</string>
 
@@ -32,6 +36,7 @@
     <string name="hint_fragment_main_page_doctor_btn_transport_edit">Fahrt bearbeiten</string>
 
     <!-- Strings for TransportDocumentEditor -->
+    <string name="autofillhint_fragment_editor_transport_doc_et_service_provider">HealthcareServiceProviderId</string>
     <string name="content_fragment_editor_transport_doc_tv_patient_data">Patientendaten</string>
     <string name="content_fragment_editor_transport_doc_tv_reason">1. Grund der Beförderung</string>
     <string name="content_fragment_editor_transport_doc_tv_days_frequency">2. Behandlungstage/Behandlungsfrequenz und nächsterreichbare, geeignete Behandlungsstätte</string>
@@ -49,8 +54,13 @@
     <string name="hint_fragment_editor_transport_doc_tv_service_provider">Behandlungsstätte</string>
     <string name="hint_fragment_editor_transport_doc_et_info">Weitere Informationen</string>
 
+    <string name="content_fragment_editor_transport_tv_transport_data">Transportdaten</string>
+    <string name="hint_fragment_editor_transport_et_transport_doc_id">Transportschein ID</string>
+    <string name="hint_fragment_editor_transport_et_transport_date">Transportdatum</string>
+    <string name="content_fragment_editor_transport_btn_save_transport">Speichern</string>
 
-
+    <string name="content_fragment_assign_transport_tv_assign_transport">Transport zuweisen</string>
+    <string name="desc_fragment_assign_transport_iv_qr_code">Zeigt den zu scannenden QR-Code</string>
 
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
@@ -91,5 +101,8 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
-    <string name="autofillhint_fragment_editor_transport_doc_et_service_provider">HealthcareServiceProviderId</string>
+    <string name="content_fragment_assign_transport_btn_self_assign">Selbst zuweisen</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+
 </resources>

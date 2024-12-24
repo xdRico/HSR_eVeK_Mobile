@@ -6,7 +6,7 @@
     android:layout_height="wrap_content"
     tools:context="de.ehealth.evek.mobile.frontend.EditorTransportDocFragment">
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -24,7 +24,7 @@
                 android:paddingEnd="30dp">
 
                 <TextView
-                    android:id="@+id/tv_patient_data"
+                    android:id="@+id/tv_transport_data"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/content_fragment_editor_transport_doc_tv_patient_data"
@@ -44,14 +44,14 @@
                     android:inputType="text|textShortMessage|textCapCharacters"
                     android:maxLength="10"
                     android:textAlignment="center"
-                    app:layout_constraintStart_toStartOf="@+id/tv_patient_data"
-                    app:layout_constraintTop_toBottomOf="@+id/tv_patient_data"
+                    app:layout_constraintStart_toStartOf="@+id/tv_transport_data"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_transport_data"
                     tools:ignore="TextFields" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/constraint_reason"
+                android:id="@+id/constraint_assign"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -59,7 +59,7 @@
                 android:paddingEnd="30dp">
 
                 <TextView
-                    android:id="@+id/tv_reason"
+                    android:id="@+id/tv_assign_transport"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/content_fragment_editor_transport_doc_tv_reason"
@@ -74,7 +74,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/tv_reason" />
+                    app:layout_constraintTop_toBottomOf="@+id/tv_assign_transport" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -98,7 +98,7 @@
                     app:layout_constraintTop_toTopOf="parent" />
 
                 <EditText
-                    android:id="@+id/et_start_date"
+                    android:id="@+id/et_transport_date"
                     android:layout_width="140dp"
                     android:layout_height="50dp"
                     android:ems="10"
@@ -115,7 +115,7 @@
                     android:layout_height="wrap_content"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/et_start_date">
+                    app:layout_constraintTop_toBottomOf="@+id/et_transport_date">
 
                     <EditText
                         android:id="@+id/et_service_provider"
@@ -190,6 +190,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/tv_type">
 
                 </androidx.recyclerview.widget.RecyclerView>
@@ -242,19 +243,19 @@
                 android:layout_height="wrap_content"
                 android:paddingStart="30dp"
                 android:paddingEnd="30dp"
-                android:paddingBottom="40dp">
+                android:paddingBottom="120dp">
 
                 <Button
-                    android:id="@+id/btn_save_transport_doc"
+                    android:id="@+id/btn_save_transport"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/content_fragment_editor_transport_doc_btn_save_transport_doc"
-                    tools:layout_editor_absoluteX="30dp"
-                    app:layout_constraintStart_toStartOf="@+id/constraint_save"
                     app:layout_constraintEnd_toEndOf="@+id/constraint_save"
-                    app:layout_constraintTop_toTopOf="@+id/constraint_save"/>
+                    app:layout_constraintStart_toStartOf="@+id/constraint_save"
+                    app:layout_constraintTop_toTopOf="@+id/constraint_save"
+                    tools:layout_editor_absoluteX="30dp" />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

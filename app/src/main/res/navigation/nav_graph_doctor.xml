@@ -3,20 +3,48 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph_doctor"
-    app:startDestination="@id/doctorMainPageFragment">
+    app:startDestination="@id/mainPageDoctorFragment">
 
     <fragment
-        android:id="@+id/doctorMainPageFragment"
+        android:id="@+id/mainPageDoctorFragment"
         android:name="de.ehealth.evek.mobile.frontend.MainPageDoctorFragment"
-        android:label="fragment_doctor_main_page"
-        tools:layout="@layout/fragment_main_page_doctor" >
+        tools:layout="@layout/fragment_main_page_doctor">
         <action
-            android:id="@+id/action_doctorMainPageFragment_to_doctorEditorTransportDocFragment"
-            app:destination="@id/doctorEditorTransportDocFragment" />
+            android:id="@+id/action_mainPageDoctorFragment_to_editorTransportDocFragment"
+            app:destination="@id/editorTransportDocFragment" />
+        <action
+            android:id="@+id/action_mainPageDoctorFragment_to_editorTransportCreateFragment"
+            app:destination="@id/editorTransportCreateFragment" />
+        <action
+            android:id="@+id/action_mainPageDoctorFragment_to_editorTransportUpdateFragment"
+            app:destination="@id/editorTransportUpdateFragment" />
     </fragment>
     <fragment
-        android:id="@+id/doctorEditorTransportDocFragment"
+        android:id="@+id/editorTransportDocFragment"
         android:name="de.ehealth.evek.mobile.frontend.EditorTransportDocFragment"
-        android:label="fragment_editor_transport_doc"
-        tools:layout="@layout/fragment_editor_transport_doc" />
+        tools:layout="@layout/fragment_editor_transport_doc">
+        <action
+            android:id="@+id/action_doctorEditorTransportDocFragment_to_editorTransportCreateFragment"
+            app:destination="@id/editorTransportCreateFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/editorTransportCreateFragment"
+        android:name="de.ehealth.evek.mobile.frontend.EditorTransportCreateFragment"
+        tools:layout="@layout/fragment_editor_transport_create">
+        <action
+            android:id="@+id/action_editorTransportCreateFragment_to_assignTransportFragment"
+            app:destination="@id/assignTransportFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/assignTransportFragment"
+        android:name="de.ehealth.evek.mobile.frontend.AssignTransportFragment"
+        tools:layout="@layout/fragment_assign_transport">
+        <action
+            android:id="@+id/action_assignTransportFragment_to_editorTransportUpdateFragment"
+            app:destination="@id/editorTransportUpdateFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/editorTransportUpdateFragment"
+        android:name="de.ehealth.evek.mobile.frontend.EditorTransportUpdateFragment"
+        tools:layout="@layout/fragment_editor_transport_update" />
 </navigation>

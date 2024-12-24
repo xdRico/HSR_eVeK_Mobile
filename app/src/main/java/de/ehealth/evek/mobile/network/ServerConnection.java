@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Locale;
 
 import de.ehealth.evek.api.exception.EncryptionException;
+import de.ehealth.evek.api.exception.IllegalProcessException;
 import de.ehealth.evek.api.network.IComClientReceiver;
 import de.ehealth.evek.api.network.IComClientSender;
 import de.ehealth.evek.api.network.ComClientReceiver;
@@ -57,7 +58,11 @@ public class ServerConnection implements IsInitializedListener {
     private void setInitialized(boolean isInitialized){
         this.isInitialized = isInitialized;
         for(IsInitializedListener listener : isInitializedListeners){
-            listener.onInitializedStateChanged(isInitialized);
+            try {
+                listener.onInitializedStateChanged(isInitialized);
+            }catch(NullPointerException e){
+                Log.sendException(e);
+            }
         }
     }
 
@@ -117,5 +122,18 @@ public class ServerConnection implements IsInitializedListener {
                 }
             }
         }).start();
+    }
+
+    void resetConnection() throws IllegalProcessException {
+        if(!isInitialized)
+            throw new IllegalProcessException("Connection already initialized!");
+        try {
+            server.close();
+            setInitialized(false);
+            isInitializedListeners.clear();
+        }catch(IOException e){
+            Log.sendException(e);
+            throw new IllegalProcessException(e);
+        }
     }
 }

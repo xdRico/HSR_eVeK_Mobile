@@ -32,12 +32,11 @@ public class EditorTransportCreateFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if(getArguments() != null) {
-            String transportDocID = getArguments().getString("transportDocumentID");
-            if (transportDocID != null && !transportDocID.isBlank()){
+        String transportDocID;
+        if(getArguments() != null
+                && (transportDocID = getArguments().getString("transportDocumentID")) != null
+                && !transportDocID.isBlank()){
                 this.transportDocumentID = transportDocID;
-            }
         }
     }
     @Override

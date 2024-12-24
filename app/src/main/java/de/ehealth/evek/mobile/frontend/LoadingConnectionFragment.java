@@ -53,6 +53,7 @@ public class LoadingConnectionFragment extends Fragment implements IsInitialized
 
     @Override
     public void onInitializedStateChanged(boolean isInitialized) {
+
         if(navController == null)
             navController = NavHostFragment.findNavController(LoadingConnectionFragment.this);
         if(navController.getCurrentDestination() == null
@@ -88,7 +89,8 @@ public class LoadingConnectionFragment extends Fragment implements IsInitialized
     @Override
     public void onLoginStateChanged(Throwable loginState) {
         handler.removeIsLoggedInListener(this);
-
+        if(!isAdded())
+            return;
         if(!(loginState instanceof UserLoggedInThrowable)) {
             Log.sendMessage("User could not be logged in from remembered data!");
             if(getActivity() == null)

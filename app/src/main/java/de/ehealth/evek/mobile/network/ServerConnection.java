@@ -51,8 +51,7 @@ public class ServerConnection implements IsInitializedListener {
             isInitializedListeners.add(listener);
     }
     public void removeIsInitializedListener(IsInitializedListener listener){
-        if(!isInitializedListeners.contains(listener))
-            isInitializedListeners.remove(listener);
+        isInitializedListeners.remove(listener);
     }
 
     private void setInitialized(boolean isInitialized){

@@ -111,8 +111,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
             isLoggedInListeners.add(listener);
     }
     public void removeIsLoggedInListener(IsLoggedInListener listener){
-        if(!isLoggedInListeners.contains(listener))
-            isLoggedInListeners.remove(listener);
+        isLoggedInListeners.remove(listener);
     }
 
     public User getLoginUser(){
@@ -224,9 +223,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
 
                 }
             }
-
-            for(IsLoggedInListener listener : isLoggedInListeners)
-                listener.onLoginStateChanged(t);
+            changeLoginState(t);
         }).start();
     }
 
@@ -243,8 +240,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         }catch(IllegalProcessException e){
             Log.sendException(e);
         }
-        for(IsLoggedInListener listener : isLoggedInListeners)
-            listener.onLoginStateChanged(new UserLogoutThrowable());
+        changeLoginState(new UserLogoutThrowable());
     }
 
     public TransportDetails tryAssignTransport(String input) throws IllegalProcessException {
@@ -290,6 +286,12 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
             Log.sendException(e);
             throw new ProcessingException(e);
         }
+    }
+
+    public void changeLoginState(Throwable loginThrowable){
+        List<IsLoggedInListener> listeners = new ArrayList<>(this.isLoggedInListeners);
+        for(IsLoggedInListener listener : listeners)
+            listener.onLoginStateChanged(loginThrowable);
     }
 
     public static Date getDate(String input) throws IllegalProcessException {

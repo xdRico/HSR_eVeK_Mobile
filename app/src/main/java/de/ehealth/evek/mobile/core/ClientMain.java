@@ -11,6 +11,7 @@ public class ClientMain {
     private static ClientMain clientMain = null;
     private Context context = null;
     private ClientMain(){
+        Thread.currentThread().setName("eVeK-MainThread");
         clientMain = this;
         Log.initLogging();
         Log.setWriteToFile(false);

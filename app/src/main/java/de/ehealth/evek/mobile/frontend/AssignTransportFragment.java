@@ -41,15 +41,15 @@ public class AssignTransportFragment extends Fragment {
         Bitmap qrCode;
         String transportID;
         if(getArguments() == null
-                || getArguments().getString("transportID") == null
-                || (transportID = getArguments().getString("transportID")).isBlank()
+                || (transportID = getArguments().getString("transportID")) == null
+                || transportID.isBlank()
                 || (qrCode = generateQRCode(transportID)) == null) {
             NavController navController = NavHostFragment.findNavController(AssignTransportFragment.this);
             if(navController.getCurrentDestination() == null
                     || navController.getCurrentDestination().getId() != R.id.assignTransportFragment) return view;
-            navController.navigateUp();
             if(getActivity() == null)
                 return view;
+            getActivity().runOnUiThread(navController::navigateUp);
             ((MainActivity) getActivity()).informationAlert("QR-Code konnte nicht erstellt werden!",
                     "Ungültiger Vorgang!");
             return view;
@@ -59,13 +59,14 @@ public class AssignTransportFragment extends Fragment {
         ivQRCode.setImageBitmap(qrCode);
 
         Button btnSelfAssign = view.findViewById(R.id.btn_self_assign);
-        UserRole role = DataHandler.instance().getLoginUser().role();
+        DataHandler handler = DataHandler.instance();
+        UserRole role = handler.getLoginUser().role();
         if(role == UserRole.TransportAdmin || role == UserRole.SuperUser) {
             btnSelfAssign.setEnabled(true);
             btnSelfAssign.setVisibility(View.VISIBLE);
-            btnSelfAssign.setOnClickListener((v) -> new Thread(() -> {
+            btnSelfAssign.setOnClickListener((v) -> handler.runOnNetworkThread(() -> {
                 try {
-                    DataHandler.instance().tryAssignTransport(transportID);
+                    handler.tryAssignTransport(transportID);
                     if (getActivity() == null)
                         return;
                     ((MainActivity) getActivity()).choiceAlert("Transport wurde erfolgreich zugewiesen!\n\r\n\rSoll der Transport bearbeitet werden?",
@@ -77,9 +78,9 @@ public class AssignTransportFragment extends Fragment {
                                             || navController.getCurrentDestination().getId() != R.id.assignTransportFragment)
                                         return;
                                     navController.navigateUp();
-                                    if (navController.getCurrentDestination().getId() != R.id.editorTransportCreateFragment) {
+                                    if(navController.getCurrentDestination().getId() == R.id.editorTransportCreateFragment){
                                         navController.navigateUp();
-                                        if (navController.getCurrentDestination().getId() != R.id.editorTransportDocFragment)
+                                        if(navController.getCurrentDestination().getId() == R.id.editorTransportDocumentFragment)
                                             navController.navigateUp();
                                     }
                                 }
@@ -104,7 +105,7 @@ public class AssignTransportFragment extends Fragment {
                         ((MainActivity) getActivity()).informationAlert(e.getLocalizedMessage(),
                                 "Transport konnte nicht zugewiesen werden!");
                 }
-            }).start());
+            }));
         }
         return view;
     }
@@ -122,7 +123,6 @@ public class AssignTransportFragment extends Fragment {
                     bitmap.setPixel(x, y, bitMatrix.get(x, y) ? 0xFF000000 : 0xFFFFFFFF);
                 }
             }
-
             return bitmap;
         } catch (WriterException e) {
             Log.sendException(e);

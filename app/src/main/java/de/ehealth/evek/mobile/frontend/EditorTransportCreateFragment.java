@@ -106,7 +106,7 @@ public class EditorTransportCreateFragment extends Fragment {
     }
 
     private void createTransport(View view) {
-        new Thread(() -> {
+        DataHandler.instance().runOnNetworkThread(() -> {
             boolean valid = true;
             //TODO insuranceData!
 
@@ -155,11 +155,16 @@ public class EditorTransportCreateFragment extends Fragment {
 
                             NavController navController = NavHostFragment.findNavController(EditorTransportCreateFragment.this);
                             if (navController.getCurrentDestination() == null
-                                    || navController.getCurrentDestination().getId() != R.id.editorTransportCreateFragment)
+                                    || navController.getCurrentDestination().getId() != R.id.editorTransportCreateFragment){
+                                dialog.dismiss();
                                 return;
-                            navController.navigateUp();
-                            if (navController.getCurrentDestination().getId() != R.id.editorTransportDocFragment)
+                            }
+                            getActivity().runOnUiThread(() -> {
                                 navController.navigateUp();
+                                if(navController.getCurrentDestination().getId() == R.id.editorTransportDocumentFragment)
+                                    navController.navigateUp();
+                            });
+
                         }
                         dialog.dismiss();
                     },
@@ -176,8 +181,6 @@ public class EditorTransportCreateFragment extends Fragment {
                         }
                         dialog.dismiss();
                     });
-
-
-        }).start();
+        });
     }
 }

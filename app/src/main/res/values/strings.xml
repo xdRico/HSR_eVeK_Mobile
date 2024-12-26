@@ -59,8 +59,19 @@
     <string name="hint_fragment_editor_transport_et_transport_date">Transportdatum</string>
     <string name="content_fragment_editor_transport_btn_save_transport">Speichern</string>
 
+    <string name="content_fragment_assign_transport_btn_self_assign">Selbst zuweisen</string>
     <string name="content_fragment_assign_transport_tv_assign_transport">Transport zuweisen</string>
     <string name="desc_fragment_assign_transport_iv_qr_code">Zeigt den zu scannenden QR-Code</string>
+
+    <string name="content_recyclerview_transport_document_row_tv_service_provider_info">Behandlungsstätte:</string>
+
+    <string name="content_recyclerview_transport_row_tv_service_provider_info">Behandlungsstätte:</string>
+    <string name="content_recyclerview_transport_row_tv_date_info">Datum:</string>
+    <string name="content_recyclerview_transport_row_tv_transport_provider">Transportdienstleister:</string>
+
+
+    <string name="title_popup_transport_already_assigned">Ungültiger Vorgang!</string>
+    <string name ="content_popup_transport_already_assigned">Der Transport wurde bereits einem anderen Transportdienstleister zugefügt!</string>
 
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
@@ -101,7 +112,6 @@
         libero vel nunc consequat, quis tincidunt nisl eleifend. Cras bibendum enim a justo luctus
         vestibulum. Fusce dictum libero quis erat maximus, vitae volutpat diam dignissim.
     </string>
-    <string name="content_fragment_assign_transport_btn_self_assign">Selbst zuweisen</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
 

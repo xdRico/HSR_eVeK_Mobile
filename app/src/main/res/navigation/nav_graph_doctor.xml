@@ -11,18 +11,21 @@
         tools:layout="@layout/fragment_main_page_doctor">
         <action
             android:id="@+id/action_mainPageDoctorFragment_to_editorTransportDocFragment"
-            app:destination="@id/editorTransportDocFragment" />
+            app:destination="@id/editorTransportDocumentFragment" />
         <action
             android:id="@+id/action_mainPageDoctorFragment_to_editorTransportCreateFragment"
             app:destination="@id/editorTransportCreateFragment" />
         <action
             android:id="@+id/action_mainPageDoctorFragment_to_editorTransportUpdateFragment"
             app:destination="@id/editorTransportUpdateFragment" />
+        <action
+            android:id="@+id/action_mainPageDoctorFragment_to_assignTransportFragment"
+            app:destination="@id/assignTransportFragment" />
     </fragment>
     <fragment
-        android:id="@+id/editorTransportDocFragment"
-        android:name="de.ehealth.evek.mobile.frontend.EditorTransportDocFragment"
-        tools:layout="@layout/fragment_editor_transport_doc">
+        android:id="@+id/editorTransportDocumentFragment"
+        android:name="de.ehealth.evek.mobile.frontend.EditorTransportDocumentFragment"
+        tools:layout="@layout/fragment_editor_transport_document">
         <action
             android:id="@+id/action_doctorEditorTransportDocFragment_to_editorTransportCreateFragment"
             app:destination="@id/editorTransportCreateFragment" />

@@ -21,7 +21,6 @@ import de.ehealth.evek.mobile.exception.UserLoggedInThrowable;
 import de.ehealth.evek.mobile.network.DataHandler;
 import de.ehealth.evek.mobile.network.IsInitializedListener;
 import de.ehealth.evek.mobile.network.IsLoggedInListener;
-import de.ehealth.evek.mobile.network.ServerConnection;
 import de.ehealth.evek.mobile.R;
 
 public class LoadingConnectionFragment extends Fragment implements IsInitializedListener, IsLoggedInListener {
@@ -42,7 +41,7 @@ public class LoadingConnectionFragment extends Fragment implements IsInitialized
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         handler = DataHandler.instance();
-        handler.getServerConnection().addIsInitializedListener(this);
+        handler.addIsInitializedListener(this);
         handler.initServerConnection();
         View view = inflater.inflate(R.layout.fragment_loading_connection, container, false);
         connectCounter = view.findViewById(R.id.tv_loadConnection_count);
@@ -53,7 +52,6 @@ public class LoadingConnectionFragment extends Fragment implements IsInitialized
 
     @Override
     public void onInitializedStateChanged(boolean isInitialized) {
-
         if(navController == null)
             navController = NavHostFragment.findNavController(LoadingConnectionFragment.this);
         if(navController.getCurrentDestination() == null
@@ -66,9 +64,10 @@ public class LoadingConnectionFragment extends Fragment implements IsInitialized
             TextView state = getActivity().findViewById(R.id.tv_loadConnection);
             getActivity().runOnUiThread(() -> state.setText(getString(R.string.content_fragment_loading_connection_tv_init_connection_auto_login)));
             handler.addIsLoggedInListener(this);
-            if(!handler.tryLoginFromStoredCredentials())
-                getActivity().runOnUiThread(() -> navController.navigate(R.id.action_loadingConnectionFragment_to_loginUserFragment));
-
+            handler.runOnNetworkThread(() -> {
+                if (!handler.tryLoginFromStoredCredentials())
+                    getActivity().runOnUiThread(() -> navController.navigate(R.id.action_loadingConnectionFragment_to_loginUserFragment));
+            });
         } else {
             setConnectCounter();
         }
@@ -77,13 +76,13 @@ public class LoadingConnectionFragment extends Fragment implements IsInitialized
     private void setConnectCounter(){
         if(connectCounter == null)
             return;
-        ServerConnection connection = handler.getServerConnection();
+        DataHandler.ConnectionCounter counter = DataHandler.instance().getConnectionCounter();
         if(getActivity() == null)
             Log.sendException(new RuntimeException("getActivity() is null!"));
         getActivity().runOnUiThread(() -> connectCounter.setText(String.format(Locale.getDefault(),
                 "(%d/%d)",
-                connection.getTimesTriedToConnect(),
-                connection.getTimesToTryConnect())));
+                counter.timesTriedToConnect(),
+                counter.timesToTryConnect())));
     }
 
     @Override

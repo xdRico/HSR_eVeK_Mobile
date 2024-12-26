@@ -1,6 +1,8 @@
 package de.ehealth.evek.mobile.network;
 
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKey;
@@ -11,6 +13,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import de.ehealth.evek.api.entity.InsuranceData;
+import de.ehealth.evek.api.entity.Patient;
+import de.ehealth.evek.api.entity.ServiceProvider;
 import de.ehealth.evek.api.entity.TransportDetails;
 import de.ehealth.evek.api.entity.TransportDocument;
 import de.ehealth.evek.api.entity.User;
@@ -22,8 +27,10 @@ import de.ehealth.evek.api.network.IComClientReceiver;
 import de.ehealth.evek.api.network.IComClientSender;
 import de.ehealth.evek.api.type.Id;
 import de.ehealth.evek.api.type.PatientCondition;
+import de.ehealth.evek.api.type.Reference;
 import de.ehealth.evek.api.type.TransportReason;
 import de.ehealth.evek.api.type.TransportationType;
+import de.ehealth.evek.api.util.COptional;
 import de.ehealth.evek.api.util.Log;
 import de.ehealth.evek.mobile.core.ClientMain;
 import de.ehealth.evek.mobile.exception.NoValidUserRoleException;
@@ -38,10 +45,14 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
 
 
     private static final int SERVER_PORT = 12013;
+
     //private static final String SERVER_ADDRESS = "192.168.1.9";
     //private static final String SERVER_ADDRESS = "192.168.1.6";
     //private static final String SERVER_ADDRESS = "192.168.56.1";
     private static final String SERVER_ADDRESS = "149.172.224.72";
+
+    private Thread networkThread;
+    private Handler networkHandler;
 
     private User loginUser;
     private IComClientReceiver receiver;
@@ -55,18 +66,43 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
 
     private final List<IsLoggedInListener> isLoggedInListeners = new ArrayList<>();
 
-    private final List<TransportDocument> transportDocuments = new ArrayList<>();
-    private final List<TransportDetails> transportDetails = new ArrayList<>();
-    //TODO
+    private final List<Id<TransportDocument>> transportDocumentIDs = new ArrayList<>();
+    private final List<Id<TransportDetails>> transportDetailIDs = new ArrayList<>();
 
-    public ServerConnection getServerConnection() {
-        return serverConnection;
+
+    public record ConnectionCounter(int timesToTryConnect, int timesTriedToConnect) {
+    }
+
+    public ConnectionCounter getConnectionCounter() {
+        return new ConnectionCounter(serverConnection.getTimesToTryConnect(), serverConnection.getTimesTriedToConnect());
     }
     public void initServerConnection(){
-        serverConnection.setServerAddress(SERVER_ADDRESS);
-        serverConnection.setServerPort(SERVER_PORT);
-        serverConnection.addIsInitializedListener(this);
-        serverConnection.initConnection();
+        networkThread = new Thread(() -> {
+            Looper.prepare();
+            networkHandler = new Handler();
+
+            serverConnection.setServerAddress(SERVER_ADDRESS);
+            serverConnection.setServerPort(SERVER_PORT);
+            serverConnection.addIsInitializedListener(this);
+            serverConnection.initConnection();
+
+            // Looper als letzten Aufruf im Thread starten!!
+            Looper.loop();
+        });
+        networkThread.setName("eVeK-NetworkThread");
+        networkThread.start();
+    }
+
+    public final void runOnNetworkThread(Runnable action) {
+        if (Thread.currentThread() != networkThread) {
+            if(networkHandler.post(action))
+                return;
+            Log.sendMessage("Runnable could not be added to network Thread!");
+            Log.sendMessage("   Run on additional Thread...");
+            new Thread(action).start();
+        } else {
+            action.run();
+        }
     }
 
     public void initUserStorage(){
@@ -106,6 +142,9 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         receiver = serverConnection.getComClientReceiver();
     }
 
+    public void addIsInitializedListener(IsInitializedListener listener){
+        serverConnection.addIsInitializedListener(listener);
+    }
     public void addIsLoggedInListener(IsLoggedInListener listener){
         if(!isLoggedInListeners.contains(listener))
             isLoggedInListeners.add(listener);
@@ -119,39 +158,70 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
     }
 
     public List<TransportDocument> getTransportDocuments(){
+        List<TransportDocument> transportDocuments = new ArrayList<>();
+        for(Id<TransportDocument> id : transportDocumentIDs)
+            try{
+                transportDocuments.add(getTransportDocumentByID(id.value()));
+            }catch(IllegalProcessException e){
+                Log.sendMessage(String.format("Could not read TransportDocument with ID %s!", id.value()));
+            }
         return transportDocuments;
+    }
+    public TransportDocument getTransportDocumentByID(String transportDocID) throws IllegalProcessException{
+        return getTransportDocumentByID(new Id<>(transportDocID));
+    }
+
+    public TransportDocument getTransportDocumentByID(Id<TransportDocument> transportDocID) throws IllegalProcessException{
+        try {
+            sender.sendTransportDocument(new TransportDocument.Get(transportDocID));
+            return receiver.receiveTransportDocument();
+        }catch(Exception e){
+            Log.sendException(e);
+            throw new IllegalProcessException(e);
+        }
+    }
+
+    public TransportDetails getTransportDetailsByID(String transportID) throws IllegalProcessException{
+        return getTransportDetailsByID(new Id<>(transportID));
+    }
+
+    public TransportDetails getTransportDetailsByID(Id<TransportDetails> transportID) throws IllegalProcessException{
+        try {
+            sender.sendTransportDetails(new TransportDetails.Get(transportID));
+            return receiver.receiveTransportDetails();
+        }catch(Exception e){
+            Log.sendException(e);
+            throw new IllegalProcessException(e);
+        }
     }
 
     public List<TransportDetails> getTransportDetails(){
+        List<TransportDetails> transportDetails = new ArrayList<>();
+        for(Id<TransportDetails> id : transportDetailIDs)
+            try{
+                transportDetails.add(getTransportDetailsByID(id.value()));
+            }catch(IllegalProcessException e){
+                Log.sendMessage(String.format("Could not read TransportDocument with ID %s!", id.value()));
+            }
         return transportDetails;
     }
 
     private void addTransportDocument(TransportDocument document) {
-        TransportDocument toDelete = null;
-        for(TransportDocument doc : transportDocuments){
-            if(doc == document) return;
-            if(doc.id().value().equals(document.id().value())) {
-                toDelete = doc;
-                break;
+        for(Id<TransportDocument> doc : transportDocumentIDs){
+            if(doc.value().equals(document.id().value())) {
+                return;
             }
         }
-        if(toDelete != null)
-            transportDocuments.remove(toDelete);
-        transportDocuments.add(document);
+        transportDocumentIDs.add(document.id());
     }
 
     private void addTransport(TransportDetails details) {
-        TransportDetails toDelete = null;
-        for(TransportDetails det : transportDetails){
-            if(det == details) return;
-            if(det.id().value().equals(details.id().value())) {
-                toDelete = det;
-                break;
+        for(Id<TransportDetails> detail : transportDetailIDs){
+            if(detail.value().equals(details.id().value())) {
+                return;
             }
         }
-        if(toDelete != null)
-            transportDetails.remove(toDelete);
-        transportDetails.add(details);
+        transportDetailIDs.add(details.id());
     }
 
     public void storeNextUser(boolean toStore){
@@ -264,12 +334,81 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         loginUser = ((UserLoggedInThrowable) isLoggedIn).getUser();
     }
 
-    public TransportDocument createTransportDocument(TransportDocument.Create cmd) throws ProcessingException {
+    public TransportDocument createTransportDocument(COptional<Reference<Patient>>patient,
+                                                     COptional<Reference<InsuranceData>> insuranceData,
+                                                     TransportReason transportReason,
+                                                     Date startDate,
+                                                     COptional<Date> endDate,
+                                                     COptional<Integer> weeklyFrequency,
+                                                     Reference<ServiceProvider> healthcareServiceProvider,
+                                                     TransportationType transportationType,
+                                                     COptional<String> additionalInfo) throws ProcessingException {
         try{
+            TransportDocument.Create cmd = new TransportDocument.Create(patient, insuranceData, transportReason, startDate, endDate,
+                    weeklyFrequency, healthcareServiceProvider,transportationType, additionalInfo, Reference.to(loginUser.id().value()));
             sender.sendTransportDocument(cmd);
             TransportDocument created = receiver.receiveTransportDocument();
             addTransportDocument(created);
             return created;
+        }catch(Exception e){
+            Log.sendException(e);
+            throw new ProcessingException(e);
+        }
+    }
+
+    public TransportDocument updateTransportDocument(Id<TransportDocument> transportDocumentId,
+                                                     TransportReason transportReason,
+                                                     Date startDate,
+                                                     COptional<Date> endDate,
+                                                     COptional<Integer> weeklyFrequency,
+                                                     Reference<ServiceProvider> healthcareServiceProvider,
+                                                     TransportationType transportationType,
+                                                     COptional<String> additionalInfo) throws ProcessingException {
+        try{
+            TransportDocument.Update cmd = new TransportDocument.Update(transportDocumentId, transportReason, startDate, endDate,
+                    weeklyFrequency, healthcareServiceProvider,transportationType, additionalInfo, Reference.to(loginUser.id().value()));
+            sender.sendTransportDocument(cmd);
+            TransportDocument updated = receiver.receiveTransportDocument();
+            addTransportDocument(updated);
+            return updated;
+        }catch(Exception e){
+            Log.sendException(e);
+            throw new ProcessingException(e);
+        }
+    }
+
+    public TransportDocument updateTransportDocumentWithPatient(Id<TransportDocument> transportDocumentId,
+                                                    Reference<Patient>patient,
+                                                    Reference<InsuranceData> insuranceData,
+                                                    TransportReason transportReason,
+                                                    Date startDate,
+                                                    COptional<Date> endDate,
+                                                    COptional<Integer> weeklyFrequency,
+                                                    Reference<ServiceProvider> healthcareServiceProvider,
+                                                    TransportationType transportationType,
+                                                    COptional<String> additionalInfo) throws ProcessingException {
+        try{
+            updateTransportDocument(transportDocumentId, transportReason, startDate,
+                    endDate, weeklyFrequency, healthcareServiceProvider, transportationType, additionalInfo);
+            TransportDocument updated;
+            updated = assignTransportDocumentPatient(transportDocumentId, patient, insuranceData);
+            addTransportDocument(updated);
+            return updated;
+        }catch(Exception e){
+            Log.sendException(e);
+            throw new ProcessingException(e);
+        }
+    }
+
+    public TransportDocument assignTransportDocumentPatient(Id<TransportDocument> transportDocumentId,
+                                                                Reference<Patient>patient,
+                                                                Reference<InsuranceData> insuranceData) throws ProcessingException{
+        try{
+            TransportDocument.AssignPatient cmd = new TransportDocument.AssignPatient(transportDocumentId, patient, insuranceData);
+            sender.sendTransportDocument(cmd);
+            TransportDocument updated = receiver.receiveTransportDocument();
+            addTransportDocument(updated);
+            return updated;
         }catch(Exception e){
             Log.sendException(e);
             throw new ProcessingException(e);
@@ -327,6 +466,16 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         };
     }
 
+    public static String getTransportationTypeCompactString(TransportationType type){
+        return switch(type) {
+            case Taxi -> "Taxi/Mietwagen";
+            case KTW -> "KTW";
+            case RTW -> "RTW";
+            case NAWorNEF -> "NAW/NEF";
+            case Other -> "andere";
+        };
+    }
+
     public static String getPatientConditionString(PatientCondition condition){
         return switch(condition) {
             case CarryingChair -> "Tragestuhl";
@@ -346,6 +495,20 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
             case HighFrequentAlike -> "d2) vergleichbarer Ausnahmefall (wie d1, Begründung unter 4. erforderlich)";
             case ContinuousImpairment -> "e) dauerhafte Mobilitätsbeeinträchtigung vergleichbar mit b und Behandlungsdauer mindestens 6 Monate (Begründung unter 4. erforderlich)";
             case OtherKTW -> "f) anderer Grund für Fahrt mit KTW (z.B. fachgerechtes Lagern, Tragen, Heben erforderlich, Begründung unter 3. und ggf. 4. erforderlich)";
+        };
+    }
+
+    public static String getTransportReasonCompactString(TransportReason reason){
+        return switch(reason) {
+            case EmergencyTransport -> "a1) Notfalltransport";
+            case FullPartStationary -> "a2) voll-/teilstationäre Krankenhausbehandlung";
+            case PrePostStationary -> "a3) vor-/nachstationäre Behandlung";
+            case AmbulantTaxi -> "b) ambulante Behandlung Taxi/Mietwagen";
+            case OtherPermitFree -> "c) anderer Grund Genehmigungsfrei";
+            case HighFrequent -> "d1) hochfrequente Behandlung";
+            case HighFrequentAlike -> "d2) vergleichbarer Ausnahmefall";
+            case ContinuousImpairment -> "e) dauerhafte Mobilitätsbeeinträchtigung";
+            case OtherKTW -> "f) anderer Grund für Fahrt mit KTW";
         };
     }
 }

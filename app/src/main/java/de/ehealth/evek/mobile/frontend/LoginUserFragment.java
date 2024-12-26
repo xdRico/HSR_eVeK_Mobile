@@ -26,7 +26,6 @@ import de.ehealth.evek.mobile.R;
 
 public class LoginUserFragment extends Fragment implements IsLoggedInListener {
 
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -76,7 +75,7 @@ public class LoginUserFragment extends Fragment implements IsLoggedInListener {
         DataHandler handler = DataHandler.instance();
         handler.addIsLoggedInListener(this);
         handler.storeNextUser(((CheckBox) getView().findViewById(R.id.cb_login_stay_logged_in)).isChecked());
-        handler.tryLogin(username, password);
+        handler.runOnNetworkThread(() -> handler.tryLogin(username, password));
     }
     @Override
     public void onLoginStateChanged(Throwable loginState) {

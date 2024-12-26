@@ -19,57 +19,63 @@ import androidx.recyclerview.widget.RecyclerView;
 import java.sql.Date;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
 
 import de.ehealth.evek.api.entity.InsuranceData;
 import de.ehealth.evek.api.entity.Patient;
 import de.ehealth.evek.api.entity.ServiceProvider;
 import de.ehealth.evek.api.entity.TransportDocument;
-import de.ehealth.evek.api.entity.User;
 import de.ehealth.evek.api.exception.IllegalProcessException;
 import de.ehealth.evek.api.exception.ProcessingException;
+import de.ehealth.evek.api.type.Id;
 import de.ehealth.evek.api.type.Reference;
 import de.ehealth.evek.api.type.TransportReason;
 import de.ehealth.evek.api.type.TransportationType;
 import de.ehealth.evek.api.util.COptional;
-import de.ehealth.evek.api.util.Debug;
 import de.ehealth.evek.api.util.Log;
 import de.ehealth.evek.mobile.R;
 import de.ehealth.evek.mobile.core.MainActivity;
 import de.ehealth.evek.mobile.network.DataHandler;
 
-public class EditorTransportDocFragment extends Fragment implements RecyclerAdapter.ItemClickListener {
+public class EditorTransportDocumentFragment extends Fragment implements SingleChoiceRecyclerAdapter.ItemClickListener {
 
-    RecyclerAdapter<TransportReason> transportReasonAdapter;
-    RecyclerAdapter<TransportationType> transportationTypeAdapter;
-    TransportReason reason = null;
-    TransportationType type = null;
+    private SingleChoiceRecyclerAdapter<TransportReason> transportReasonAdapter;
+    private SingleChoiceRecyclerAdapter<TransportationType> transportationTypeAdapter;
+    private Id<TransportDocument> transportDocument = null;
+    private TransportReason reason = null;
+    private TransportationType type = null;
 
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        String transportDocID;
+        if(getArguments() != null
+                && (transportDocID = getArguments().getString("transportDocumentID")) != null
+                && !transportDocID.isBlank())
+            this.transportDocument = new Id<>(transportDocID);
     }
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_editor_transport_doc, container, false);
+        View view = inflater.inflate(R.layout.fragment_editor_transport_document, container, false);
 
         // data to populate the RecyclerView with
         ArrayList<TransportReason> transportReasons = new ArrayList<>(Arrays.asList(TransportReason.values()));
         // set up the RecyclerView
         RecyclerView recyclerView = view.findViewById(R.id.rv_transport_reason);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        transportReasonAdapter = new RecyclerAdapter<>(getActivity(), transportReasons, TransportReason.class);
+        transportReasonAdapter = new SingleChoiceRecyclerAdapter<>(getActivity(), transportReasons, TransportReason.class);
         transportReasonAdapter.setClickListener(this);
         recyclerView.setAdapter(transportReasonAdapter);
-
 
         ArrayList<TransportationType> transportTypes = new ArrayList<>(Arrays.asList(TransportationType.values()));
         // set up the RecyclerView
         recyclerView = view.findViewById(R.id.rv_transportation_type);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        transportationTypeAdapter = new RecyclerAdapter<>(getActivity(), transportTypes, TransportationType.class);
+        transportationTypeAdapter = new SingleChoiceRecyclerAdapter<>(getActivity(), transportTypes, TransportationType.class);
         transportationTypeAdapter.setClickListener(this);
         recyclerView.setAdapter(transportationTypeAdapter);
 
@@ -117,6 +123,37 @@ public class EditorTransportDocFragment extends Fragment implements RecyclerAdap
                         insuranceNumber.setText(new String (c));
             }
         });
+
+        //set Active TransportDoc, if given
+        if(transportDocument == null)
+            return view;
+        DataHandler handler = DataHandler.instance();
+        handler.runOnNetworkThread(() -> {
+            try{
+                TransportDocument document = handler.getTransportDocumentByID(transportDocument.value());
+                if(document == null)
+                    throw new IllegalProcessException("Transport with ID " + transportDocument.value() + " not found!");
+                if(getActivity() == null)
+                    return;
+                getActivity().runOnUiThread(() -> {
+                    if(document.patient().isPresent())
+                        ((EditText) view.findViewById(R.id.et_insurance_number)).setText(document.patient().get().id().value());
+                    transportReasonAdapter.setActiveItem(document.transportReason());
+                    ((EditText) view.findViewById(R.id.et_transport_date)).setText(document.startDate().toString());
+                    ((EditText) view.findViewById(R.id.et_service_provider)).setText(document.healthcareServiceProvider().id().value());
+                    if(document.weeklyFrequency().isPresent() && document.endDate().isPresent()) {
+                        ((EditText) view.findViewById(R.id.et_end_date)).setText(document.endDate().toString());
+                        ((EditText) view.findViewById(R.id.et_weekly_frequency)).setText(String.format(Locale.GERMANY, "%d", document.weeklyFrequency().get()));
+                    }
+                    transportationTypeAdapter.setActiveItem(document.transportationType());
+                    if(document.additionalInfo().isPresent())
+                        ((EditText) view.findViewById(R.id.et_info)).setText(document.additionalInfo().get());
+                });
+            }catch(IllegalProcessException e){
+                Log.sendMessage("Transport konnte nicht geladen werden!");
+            }
+        });
+
         return view;
     }
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
@@ -124,7 +161,7 @@ public class EditorTransportDocFragment extends Fragment implements RecyclerAdap
     }
 
     private void createTransportDoc(View view) {
-        new Thread(() -> {
+        DataHandler.instance().runOnNetworkThread(() -> {
             boolean valid = true;
             //TODO insuranceData!
 
@@ -138,7 +175,6 @@ public class EditorTransportDocFragment extends Fragment implements RecyclerAdap
             COptional<Reference<InsuranceData>> insuranceData = COptional.empty();
             COptional<Date> endDate = COptional.empty();
             COptional<Integer> weeklyFrequency = COptional.empty();
-            Reference<User> signature = Reference.to(DataHandler.instance().getLoginUser().id().value());
 
             TransportReason reason = this.reason;
             Date startDate = null;
@@ -158,8 +194,6 @@ public class EditorTransportDocFragment extends Fragment implements RecyclerAdap
 
             try{
                 startDate = DataHandler.getDate(((EditText) view.findViewById(R.id.et_transport_date)).getText().toString());
-
-                //startDate = Date.valueOf(((EditText) view.findViewById(R.id.et_start_date)).getText().toString());
             }catch(Exception e){
                 Log.sendException(e);
                 valid = false;
@@ -177,7 +211,6 @@ public class EditorTransportDocFragment extends Fragment implements RecyclerAdap
                 }
                 try{
                     endDate = COptional.of(DataHandler.getDate(((EditText) view.findViewById(R.id.et_end_date)).getText().toString()));
-                    //endDate = COptional.of(Date.valueOf(((EditText) view.findViewById(R.id.et_end_date)).getText().toString()));
                 }catch(IllegalProcessException e) {
                     Log.sendException(e);
                     getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_end_date)).setTextColor(Color.argb(255, 255, 100, 100)));
@@ -195,11 +228,23 @@ public class EditorTransportDocFragment extends Fragment implements RecyclerAdap
 
             if(!valid)
                 return;
+
+            DataHandler handler = DataHandler.instance();
             TransportDocument transportDocument = null;
             try {
-                transportDocument = DataHandler.instance().createTransportDocument(
-                        new TransportDocument.Create(patient, insuranceData, reason, startDate, endDate, weeklyFrequency, serviceProvider, type, info, signature));
-            }catch(ProcessingException e){
+                if(this.transportDocument != null)
+                    transportDocument = handler.getTransportDocumentByID(this.transportDocument);
+
+                if(transportDocument != null) {
+                    if (patient.isPresent() && insuranceData.isPresent()
+                            && (transportDocument.patient().isEmpty() || !(transportDocument.patient().get().id().value().equals(patient.get().id().value()))
+                            || transportDocument.insuranceData().isEmpty() || !(transportDocument.insuranceData().get().id().value().equals(insuranceData.get().id().value()))))
+                        transportDocument = handler.updateTransportDocumentWithPatient(this.transportDocument, patient.get(), insuranceData.get(), reason, startDate, endDate, weeklyFrequency, serviceProvider, type, info);
+                    else
+                        transportDocument = handler.updateTransportDocument(this.transportDocument, reason, startDate, endDate, weeklyFrequency, serviceProvider, type, info);
+                } else
+                    transportDocument = handler.createTransportDocument(patient, insuranceData, reason, startDate, endDate, weeklyFrequency, serviceProvider, type, info);
+            }catch(IllegalProcessException | ProcessingException e){
                 if(getActivity() == null)
                     return;
                 ((MainActivity) getActivity()).exceptionAlert(e, "Transportschein konnte nicht erstellt werden!");
@@ -214,9 +259,9 @@ public class EditorTransportDocFragment extends Fragment implements RecyclerAdap
                     (dialog, which) -> {
                         if(getActivity() != null){
 
-                            NavController navController = NavHostFragment.findNavController(EditorTransportDocFragment.this);
+                            NavController navController = NavHostFragment.findNavController(EditorTransportDocumentFragment.this);
                             if(navController.getCurrentDestination() == null
-                                    || navController.getCurrentDestination().getId() != R.id.editorTransportDocFragment) return;
+                                    || navController.getCurrentDestination().getId() != R.id.editorTransportDocumentFragment) return;
                             navController.navigateUp();
                         }
                         dialog.dismiss();
@@ -225,28 +270,30 @@ public class EditorTransportDocFragment extends Fragment implements RecyclerAdap
                     (dialog, which) -> {
                         if(getActivity() != null){
 
-                            NavController navController = NavHostFragment.findNavController(EditorTransportDocFragment.this);
+                            NavController navController = NavHostFragment.findNavController(EditorTransportDocumentFragment.this);
                             if(navController.getCurrentDestination() == null
-                                    || navController.getCurrentDestination().getId() != R.id.editorTransportDocFragment) return;
+                                    || navController.getCurrentDestination().getId() != R.id.editorTransportDocumentFragment) return;
                             Bundle bundle = new Bundle();
                             bundle.putString("transportDocumentID", finalTransportDocument.id().value());
                             navController.navigate(R.id.action_doctorEditorTransportDocFragment_to_editorTransportCreateFragment, bundle);
+
                         }
                         dialog.dismiss();
                     });
-        }).start();
+        });
     }
 
     @Override
     public <T> void onItemClick(T obj, int position) {
-        //if(view.getId() == R.id.rv_transport_reason) {
-        if (obj == TransportReason.class){
-            Debug.sendMessage("Clicked on " + transportReasonAdapter.getItem(position).toString() + " on position " + position);
+        if (obj == TransportReason.class)
             reason = transportReasonAdapter.getItem(position);
-        //}else if(view.getId() == R.id.rv_transportation_type) {
-        }else if(obj == TransportationType.class){
-            Debug.sendMessage("Clicked on " + transportationTypeAdapter.getItem(position).toString() + " on position " + position);
+
+            //Debug.sendMessage("Clicked on " + transportReasonAdapter.getItem(position).toString() + " on position " + position);
+
+        else if(obj == TransportationType.class)
             type = transportationTypeAdapter.getItem(position);
-        }
+
+            //Debug.sendMessage("Clicked on " + transportationTypeAdapter.getItem(position).toString() + " on position " + position);
+
     }
 }

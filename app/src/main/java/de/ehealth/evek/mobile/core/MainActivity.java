@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -15,7 +16,6 @@ import androidx.navigation.ui.NavigationUI;
 import de.ehealth.evek.api.entity.TransportDetails;
 import de.ehealth.evek.api.exception.IllegalProcessException;
 import de.ehealth.evek.api.exception.UserNotProvidedException;
-import de.ehealth.evek.api.util.Debug;
 import de.ehealth.evek.api.util.Log;
 import de.ehealth.evek.mobile.databinding.ActivityMainBinding;
 import de.ehealth.evek.mobile.R;
@@ -37,6 +37,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         ClientMain.instance(this);
 
         ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
@@ -47,10 +48,32 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(binding.toolbar);
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+        Bundle navState;
+        String navGraph;
+        if (savedInstanceState != null
+        && (navState = savedInstanceState.getBundle("nav_state")) != null
+        && (navGraph = savedInstanceState.getString("nav_graph")) != null){
+            navController.restoreState(navState);
+            Log.sendMessage(String.format("%s ?= %s", navGraph, "nav_graph_doctor"));
+            if(navGraph.equalsIgnoreCase("nav_graph_doctor"))
+                navController.setGraph(R.navigation.nav_graph_doctor);
+            else if(navGraph.equalsIgnoreCase("nav_graph_user"))
+                navController.setGraph(R.navigation.nav_graph_user);
+            else
+                navController.setGraph(R.navigation.nav_graph);
+
+        } else navController.setGraph(R.navigation.nav_graph);
+
+
         navController.addOnDestinationChangedListener((controller, destination, arguments) ->
                 setQRScanEnabled(destination.getId() == R.id.mainPageDoctorFragment || destination.getId() == R.id.mainPageUserFragment));
-        appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
-        NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+        try {
+            appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
+            NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
+
+        }catch (IllegalStateException e){
+            Log.sendException(e);
+        }
         setNavigation(false);
         setQRScanEnabled(false);
     }
@@ -60,6 +83,31 @@ public class MainActivity extends AppCompatActivity {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        // Navigation-Controller abrufen
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+
+        // Aktuelles Ziel speichern
+        Bundle navState = navController.saveState();
+        if (navState != null) {
+            outState.putBundle("nav_state", navState);
+            String navGraphName;
+            int graphId = navController.getGraph().getId();
+            if (graphId == R.id.nav_graph_doctor) {
+                navGraphName = "nav_graph_doctor";
+            } else if (graphId == R.id.nav_graph_user) {
+                navGraphName = "nav_graph_user";
+            } else {
+                navGraphName = "nav_graph"; // Standardwert
+            }
+            outState.putString("nav_graph", navGraphName);
+
+        }
     }
 
     @Override
@@ -74,18 +122,20 @@ public class MainActivity extends AppCompatActivity {
 
             choiceAlert("Durch das abmelden werden die aktuellen Transportscheine und Transporte aus der App entfernt und können nur noch über die IDs abgerufen werden!", "Abmelden?",
                     "Nein, angemeldet bleiben!", "Ja, abmelden!", (dialog, var) -> {
-                        try{
-                            Log.sendMessage("Logging out user...");
-                            DataHandler.instance().logout();
-                            NavController controller = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-                            runOnUiThread(() -> controller.setGraph(controller.getNavInflater().inflate(R.navigation.nav_graph)));
-                            Log.sendMessage("Successfully logged out user!");
-                        } catch(IllegalProcessException e){
-                            if(!(e.getCause() instanceof UserNotProvidedException))
-                                Log.sendException(e);
-                        }
+                        DataHandler handler = DataHandler.instance();
+                        handler.runOnNetworkThread(() -> {
+                            try {
+                                Log.sendMessage("Logging out user...");
+                                handler.logout();
+                                NavController controller = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+                                runOnUiThread(() -> controller.setGraph(controller.getNavInflater().inflate(R.navigation.nav_graph)));
+                                Log.sendMessage("Successfully logged out user!");
+                            } catch (IllegalProcessException e) {
+                                if(!(e.getCause() instanceof UserNotProvidedException))
+                                    Log.sendException(e);
+                            }
+                        });
                     });
-
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -94,17 +144,27 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onSupportNavigateUp() {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        try {
-            if (navController.getPreviousBackStackEntry() == navController.getBackStackEntry(R.id.loginUserFragment))
-                return false;
-        }catch(IllegalArgumentException e){
-            Debug.sendMessage("loginUserFragment ist nicht im backStack!");
-        }
-        try {
-            if (navController.getPreviousBackStackEntry() == navController.getBackStackEntry(R.id.loadingConnectionFragment))
-                return false;
-        }catch(IllegalArgumentException e){
-            Debug.sendMessage("loadingConnectionFragment ist nicht im backStack!");
+        if(navController.getPreviousBackStackEntry() != null
+        && navController.getCurrentDestination() != null){
+
+            int previousId = navController.getPreviousBackStackEntry().getDestination().getId();
+
+            if(navController.getGraph().getId() == R.id.nav_graph){
+                if (previousId == R.id.loginUserFragment ||
+                        previousId == R.id.loadingConnectionFragment)
+                    return false;
+
+            }else if(navController.getGraph().getId() == R.id.nav_graph_doctor){
+                int currentId = navController.getCurrentDestination().getId();
+
+                while(currentId != R.id.mainPageDoctorFragment)
+                    try{
+                        navController.navigateUp();
+                        currentId = navController.getCurrentDestination().getId();
+                    }catch(Exception e){
+                        break;
+                    }
+            }
         }
         try {
             return NavigationUI.navigateUp(navController, appBarConfiguration)
@@ -151,25 +211,22 @@ public class MainActivity extends AppCompatActivity {
     {
         if(result.getContents() == null)
             return;
-        new Thread(() -> {
+        DataHandler handler = DataHandler.instance();
+        handler.runOnNetworkThread(() -> {
             try {
-                TransportDetails created = DataHandler.instance().tryAssignTransport(result.getContents());
+                TransportDetails created = handler.tryAssignTransport(result.getContents());
                 Log.sendMessage(created.toString());
                 NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
                 if(navController.getCurrentDestination() == null)
                     return;
                 if(navController.getCurrentDestination().getId() == R.id.mainPageDoctorFragment)
                     runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_editorTransportUpdateFragment));
-                /*Intent intent = new Intent(MainActivity.this, EditorActivity.class);
-                intent.putExtra("key", TransportDetails.class); //Optional parameters
-                startActivity(intent);*/
-                //TODO EDITOR
 
             }catch(IllegalProcessException e){
                 Log.sendException(e);
                 exceptionAlert(e, "Error assigning Transport Provider!");
             }
-        }).start();
+        });
     });
 
     public void exceptionAlert(Throwable e, String title){

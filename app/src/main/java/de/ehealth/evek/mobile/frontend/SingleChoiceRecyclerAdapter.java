@@ -18,8 +18,11 @@ import de.ehealth.evek.api.type.TransportationType;
 import de.ehealth.evek.mobile.R;
 import de.ehealth.evek.mobile.network.DataHandler;
 
-public class RecyclerAdapter<T> extends RecyclerView.Adapter<RecyclerAdapter.ViewHolder>{
+/** @noinspection rawtypes*/
+public class SingleChoiceRecyclerAdapter<T> extends RecyclerView.Adapter<SingleChoiceRecyclerAdapter.ViewHolder>{
 
+    private boolean setup = false;
+    private T toSetActive = null;
     private final Class<T> t;
     private final List<T> mData;
     private final List<CheckBox> checkBoxes = new ArrayList<>();
@@ -27,7 +30,7 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter<RecyclerAdapter.Vie
     private ItemClickListener mClickListener;
 
     // data is passed into the constructor
-    RecyclerAdapter(Context context, List<T> data, Class<T> typeClass) {
+    SingleChoiceRecyclerAdapter(Context context, List<T> data, Class<T> typeClass) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
         t = typeClass;
@@ -42,17 +45,20 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter<RecyclerAdapter.Vie
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerAdapter.ViewHolder holder, int position) {
-        var choice = mData.get(position);
-        String s = choice.toString();
+    public void onBindViewHolder(@NonNull SingleChoiceRecyclerAdapter.ViewHolder holder, int position) {
+        T item = mData.get(position);
+        String s = item.toString();
         if(t == TransportReason.class)
-            s = DataHandler.getTransportReasonString((TransportReason) choice);
+            s = DataHandler.getTransportReasonString((TransportReason) item);
         else if(t == TransportationType.class)
-            s = DataHandler.getTransportationTypeString((TransportationType) choice);
+            s = DataHandler.getTransportationTypeString((TransportationType) item);
         else if(t == PatientCondition.class)
-            s = DataHandler.getPatientConditionString((PatientCondition) choice);
+            s = DataHandler.getPatientConditionString((PatientCondition) item);
         holder.checkBox.setText(s);
+        if(toSetActive != null && item == toSetActive)
+            holder.checkBox.setChecked(true);
         checkBoxes.add(holder.checkBox);
+        setup = true;
     }
 
     // total number of rows
@@ -61,6 +67,16 @@ public class RecyclerAdapter<T> extends RecyclerView.Adapter<RecyclerAdapter.Vie
         return mData.size();
     }
 
+    public void setActiveItem (T item){
+        if(!setup) {
+            toSetActive = item;
+            return;
+        }
+
+        CheckBox box = checkBoxes.get(mData.indexOf(item));
+            box.setChecked(true);
+            box.callOnClick();
+    }
 
     // stores and recycles views as they are scrolled off screen
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {

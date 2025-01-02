@@ -25,6 +25,11 @@ import de.ehealth.evek.mobile.R;
 import de.ehealth.evek.mobile.core.MainActivity;
 import de.ehealth.evek.mobile.network.DataHandler;
 
+/**
+ * Class belonging to the EditorTransportCreate Fragment
+ *
+ * @extends Fragment
+ */
 public class EditorTransportCreateFragment extends Fragment {
 
     String transportDocumentID = null;
@@ -105,6 +110,11 @@ public class EditorTransportCreateFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Method used for creating a Transport with the Information currently inserted
+     *
+     * @param view - The View calling the method
+     */
     private void createTransport(View view) {
         DataHandler.instance().runOnNetworkThread(() -> {
             boolean valid = true;
@@ -136,8 +146,7 @@ public class EditorTransportCreateFragment extends Fragment {
                 return;
             TransportDetails transport = null;
             try {
-                transport = DataHandler.instance().createTransport(
-                        new TransportDetails.Create(transportDoc, date));
+                transport = DataHandler.instance().createTransport(transportDoc, date);
             } catch (ProcessingException e) {
                 if (getActivity() == null)
                     return;

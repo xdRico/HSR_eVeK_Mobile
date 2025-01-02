@@ -24,6 +24,13 @@ import de.ehealth.evek.mobile.network.DataHandler;
 import de.ehealth.evek.mobile.network.IsLoggedInListener;
 import de.ehealth.evek.mobile.R;
 
+/**
+ * Class belonging to the LoginUser Fragment
+ *
+ * @extends Fragment
+ *
+ * @implements IsLoggedInListener
+ */
 public class LoginUserFragment extends Fragment implements IsLoggedInListener {
 
     @Override
@@ -33,6 +40,7 @@ public class LoginUserFragment extends Fragment implements IsLoggedInListener {
         if(getActivity() != null && getActivity() instanceof MainActivity)
             ((MainActivity) getActivity()).setNavigation(false);
     }
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -59,6 +67,10 @@ public class LoginUserFragment extends Fragment implements IsLoggedInListener {
 
         return view;
     }
+
+    /**
+     * Method used to try to login with the Information currently inserted
+     */
     private void tryLogin() {
         if(getView() == null)
             return;

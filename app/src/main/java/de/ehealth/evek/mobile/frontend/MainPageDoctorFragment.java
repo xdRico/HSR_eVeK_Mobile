@@ -25,6 +25,14 @@ import de.ehealth.evek.mobile.R;
 import de.ehealth.evek.mobile.core.MainActivity;
 import de.ehealth.evek.mobile.network.DataHandler;
 
+/**
+ * Class belonging to the Doctor MainPage Fragment
+ *
+ * @extends Fragment
+ *
+ * @implements TransportDocumentRecyclerAdapter.ItemClickListener
+ * @implements TransportRecyclerAdapter.ItemClickListener
+ */
 public class MainPageDoctorFragment extends Fragment implements TransportDocumentRecyclerAdapter.ItemClickListener, TransportRecyclerAdapter.ItemClickListener {
 
     @Override
@@ -124,6 +132,5 @@ public class MainPageDoctorFragment extends Fragment implements TransportDocumen
             else
                 ((MainActivity) getActivity()).informationAlert(getString(R.string.title_popup_transport_already_assigned), getString(R.string.content_popup_transport_already_assigned));
         });
-
     }
 }

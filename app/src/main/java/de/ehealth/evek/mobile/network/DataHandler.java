@@ -37,12 +37,23 @@ import de.ehealth.evek.mobile.exception.NoValidUserRoleException;
 import de.ehealth.evek.mobile.exception.UserLoggedInThrowable;
 import de.ehealth.evek.mobile.exception.UserLogoutThrowable;
 
+/**
+ * Class DataHandler used for handling Communication and Data handling between Backend, Network and Frontend
+ *
+ * @implements IsLoggedInListener
+ * @implements IsInitializedListener
+ */
 public class DataHandler implements IsLoggedInListener, IsInitializedListener{
     private static DataHandler instance;
+
+    /**
+     * Method for getting the current DataHandler instance or else creating a new one
+     *
+     * @return DataHandler - the current DataHandler
+     */
     public static DataHandler instance(){
         return instance == null ? (instance = new DataHandler()) : instance;
     }
-
 
     private static final int SERVER_PORT = 12013;
 
@@ -69,13 +80,28 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
     private final List<Id<TransportDocument>> transportDocumentIDs = new ArrayList<>();
     private final List<Id<TransportDetails>> transportDetailIDs = new ArrayList<>();
 
-
+    /**
+     * Record used for passing the ConnectionCounter
+     *
+     * @param timesToTryConnect - maximum times for trying to connect
+     * @param timesTriedToConnect - current count of tries
+     */
     public record ConnectionCounter(int timesToTryConnect, int timesTriedToConnect) {
     }
 
+    /**
+     * Method for getting the current ConnectionCounter
+     *
+     * @return ConnectionCounter - the current ConnectionCounter
+     */
     public ConnectionCounter getConnectionCounter() {
         return new ConnectionCounter(serverConnection.getTimesToTryConnect(), serverConnection.getTimesTriedToConnect());
     }
+
+    /**
+     * Method for initializing the Server Connection <br>
+     * Creating a new looping Thread accessible with runOnNetworkThread
+     */
     public void initServerConnection(){
         networkThread = new Thread(() -> {
             Looper.prepare();
@@ -93,6 +119,11 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         networkThread.start();
     }
 
+    /**
+     * Method to run a runnable on the Network Thread
+     *
+     * @param action - the runnable to run on the Network Thread
+     */
     public final void runOnNetworkThread(Runnable action) {
         if (Thread.currentThread() != networkThread) {
             if(networkHandler.post(action))
@@ -105,6 +136,9 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         }
     }
 
+    /**
+     * Method for initializing storing Users for staying logged in
+     */
     public void initUserStorage(){
         MasterKey masterKey = null;
         SharedPreferences encryptedSharedPreferences = null;
@@ -142,35 +176,73 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         receiver = serverConnection.getComClientReceiver();
     }
 
+    /**
+     * Method for adding IsInitializedListeners
+     *
+     * @param listener - IsInitializedListener to be added
+     */
     public void addIsInitializedListener(IsInitializedListener listener){
         serverConnection.addIsInitializedListener(listener);
     }
+
+    /**
+     * Method for adding IsLoggedInListeners
+     *
+     * @param listener - IsLoggedInListener to be added
+     */
     public void addIsLoggedInListener(IsLoggedInListener listener){
         if(!isLoggedInListeners.contains(listener))
             isLoggedInListeners.add(listener);
     }
+
+    /**
+     * Method for removing IsInitializedListeners
+     *
+     * @param listener - IsInitializedListener to be removed
+     */
     public void removeIsLoggedInListener(IsLoggedInListener listener){
         isLoggedInListeners.remove(listener);
     }
 
+    /**
+     * Method to get the currently logged in User
+     *
+     * @return User - the currently logged in User
+     */
     public User getLoginUser(){
         return loginUser;
     }
 
-    public List<TransportDocument> getTransportDocuments(){
-        List<TransportDocument> transportDocuments = new ArrayList<>();
-        for(Id<TransportDocument> id : transportDocumentIDs)
-            try{
-                transportDocuments.add(getTransportDocumentByID(id.value()));
-            }catch(IllegalProcessException e){
-                Log.sendMessage(String.format("Could not read TransportDocument with ID %s!", id.value()));
-            }
-        return transportDocuments;
+    /**
+     * Method to be called when the LoginState changes <br>
+     * Notifying all IsLoggedInListeners
+     *
+     * @param loginThrowable - throwable representing the login State (generally {@link UserLoggedInThrowable} or {@link UserLogoutThrowable})
+     */
+    private void changeLoginState(Throwable loginThrowable){
+        List<IsLoggedInListener> listeners = new ArrayList<>(this.isLoggedInListeners);
+        for(IsLoggedInListener listener : listeners)
+            listener.onLoginStateChanged(loginThrowable);
     }
+
+    /**
+     * Method to get a TransportDocument by its Id
+     *
+     * @param transportDocID - the Id of the TransportDocument as String
+     *
+     * @return TransportDocument - the TransportDocument with the given Id
+     */
     public TransportDocument getTransportDocumentByID(String transportDocID) throws IllegalProcessException{
         return getTransportDocumentByID(new Id<>(transportDocID));
     }
 
+    /**
+     * Method to get a TransportDocument by its Id
+     *
+     * @param transportDocID - the Id of the TransportDocument
+     *
+     * @return TransportDocument - the TransportDocument with the given Id
+     */
     public TransportDocument getTransportDocumentByID(Id<TransportDocument> transportDocID) throws IllegalProcessException{
         try {
             sender.sendTransportDocument(new TransportDocument.Get(transportDocID));
@@ -181,10 +253,55 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         }
     }
 
+    /**
+     * Method to get the TransportDocuments of the session as List
+     *
+     * @return List<TransportDocument> - the List of current TransportDocuments
+     */
+    public List<TransportDocument> getTransportDocuments(){
+        List<TransportDocument> transportDocuments = new ArrayList<>();
+        for(Id<TransportDocument> id : transportDocumentIDs)
+            try{
+                transportDocuments.add(getTransportDocumentByID(id.value()));
+            }catch(IllegalProcessException e){
+                Log.sendMessage(String.format("Could not read TransportDocument with ID %s!", id.value()));
+            }
+        return transportDocuments;
+    }
+
+    /**
+     * Method to add a TransportDocument to the current sessions TransportDocuments
+     *
+     * @param transportDocument - the TransportDocument to be added
+     */
+    private void addTransportDocument(TransportDocument transportDocument) {
+        for(Id<TransportDocument> doc : transportDocumentIDs){
+            if(doc.value().equals(transportDocument.id().value())) {
+                return;
+            }
+        }
+        transportDocumentIDs.add(transportDocument.id());
+    }
+
+
+    /**
+     * Method to get a Transport by its Id
+     *
+     * @param transportID - the Id of the Transport as String
+     *
+     * @return TransportDetails - the Transport with the given Id
+     */
     public TransportDetails getTransportDetailsByID(String transportID) throws IllegalProcessException{
         return getTransportDetailsByID(new Id<>(transportID));
     }
 
+    /**
+     * Method to get a Transport by its Id
+     *
+     * @param transportID - the Id of the Transport
+     *
+     * @return TransportDetails - the Transport with the given Id
+     */
     public TransportDetails getTransportDetailsByID(Id<TransportDetails> transportID) throws IllegalProcessException{
         try {
             sender.sendTransportDetails(new TransportDetails.Get(transportID));
@@ -195,6 +312,11 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         }
     }
 
+    /**
+     * Method to get the Transports of the session as List
+     *
+     * @return List<TransportDetails> - the List of current Transports
+     */
     public List<TransportDetails> getTransportDetails(){
         List<TransportDetails> transportDetails = new ArrayList<>();
         for(Id<TransportDetails> id : transportDetailIDs)
@@ -206,28 +328,57 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         return transportDetails;
     }
 
-    private void addTransportDocument(TransportDocument document) {
-        for(Id<TransportDocument> doc : transportDocumentIDs){
-            if(doc.value().equals(document.id().value())) {
-                return;
-            }
-        }
-        transportDocumentIDs.add(document.id());
-    }
-
-    private void addTransport(TransportDetails details) {
+    /**
+     * Method to add a Transport to the current sessions TransportDetails
+     *
+     * @param transportDetails - the TransportDetails to be added
+     */
+    private void addTransport(TransportDetails transportDetails) {
         for(Id<TransportDetails> detail : transportDetailIDs){
-            if(detail.value().equals(details.id().value())) {
+            if(detail.value().equals(transportDetails.id().value())) {
                 return;
             }
         }
-        transportDetailIDs.add(details.id());
+        transportDetailIDs.add(transportDetails.id());
     }
 
+    /**
+     * Method to try to assign a Transport to the current Users Service Provider
+     *
+     * @param input - the Id of the TransportDetails as String
+     *
+     * @return TransportDetails - the TransportDetails that were assigned
+     * @throws IllegalProcessException - thrown, when The String format does not match or the Transport could not be assigned
+     */
+    public TransportDetails tryAssignTransport(String input) throws IllegalProcessException {
+        if(!input.matches("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}"))
+            throw new IllegalArgumentException("String format does not match!");
+        try {
+            sender.sendTransportDetails(new TransportDetails.AssignTransportProvider(new Id<>(input), loginUser.serviceProvider()));
+            TransportDetails assigned = receiver.receiveTransportDetails();
+            addTransport(assigned);
+            return assigned;
+        } catch (Exception e) {
+            Log.sendException(e);
+            throw new IllegalProcessException(e);
+        }
+    }
+
+
+    /**
+     * Method to set the next Logged in User to be stored
+     *
+     * @param toStore - if the next user should be stored
+     */
     public void storeNextUser(boolean toStore){
         this.storeNextUser = toStore;
     }
 
+    /**
+     * Method to try to login by stored credentials
+     *
+     * @return boolean - if a user has been logged in
+     */
     public boolean tryLoginFromStoredCredentials(){
         if(!validUserStoring)
             return false;
@@ -245,6 +396,12 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         return false;
     }
 
+    /**
+     * Method to try to login by given credentials
+     *
+     * @param username - the username to be tried to be logged in
+     * @param password - the password to be tried to be logged in
+     */
     public void tryLogin(String username, String password){
         new Thread (() -> {
             Throwable t = new WrongCredentialsException();
@@ -289,14 +446,17 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
                         Log.sendMessage("User " + username + " could not be saved for auto login!");
                     }
                     storeNextUser = false;
-
-
                 }
             }
             changeLoginState(t);
         }).start();
     }
 
+    /**
+     * Method to logout the current user
+     *
+     * @throws IllegalProcessException - thrown, when no User is logged in or the Server Connection could not be reset
+     */
     public void logout() throws IllegalProcessException{
         if(loginUser == null)
             throw new IllegalProcessException(new UserNotProvidedException("No user logged in!"));
@@ -313,20 +473,6 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         changeLoginState(new UserLogoutThrowable());
     }
 
-    public TransportDetails tryAssignTransport(String input) throws IllegalProcessException {
-        if(!input.matches("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}"))
-            throw new IllegalArgumentException("String format does not match!");
-        try {
-            sender.sendTransportDetails(new TransportDetails.AssignTransportProvider(new Id<>(input), loginUser.serviceProvider()));
-            TransportDetails assigned = receiver.receiveTransportDetails();
-            addTransport(assigned);
-            return assigned;
-        } catch (Exception e) {
-            Log.sendException(e);
-            throw new IllegalProcessException(e);
-        }
-    }
-
     @Override
     public void onLoginStateChanged(Throwable isLoggedIn) {
         if (!(isLoggedIn instanceof UserLoggedInThrowable))
@@ -334,6 +480,23 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         loginUser = ((UserLoggedInThrowable) isLoggedIn).getUser();
     }
 
+    /**
+     * Method to create a new TransportDocument with the given parameters
+     *
+     * @param patient - the patient that the transport document should be assigned to
+     * @param insuranceData - the insurance data to use for the transport
+     * @param transportReason - the reason of the transport
+     * @param startDate - the start date of the transport document
+     * @param endDate - the end date of the transport document
+     * @param weeklyFrequency - how many transports have to be made each week
+     * @param healthcareServiceProvider - the service provider where the patient is treated
+     * @param transportationType - the type of the transportation (vehicle)
+     * @param additionalInfo - additional information to be made for the transport document
+     *
+     * @return TransportDocument - the created TransportDocument
+     *
+     * @throws ProcessingException - thrown, when the Transport Document could not be created
+     */
     public TransportDocument createTransportDocument(COptional<Reference<Patient>>patient,
                                                      COptional<Reference<InsuranceData>> insuranceData,
                                                      TransportReason transportReason,
@@ -356,6 +519,21 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         }
     }
 
+    /**
+     * Method to update the information of a TransportDocument with the given parameters
+     *
+     * @param transportReason - the reason of the transport
+     * @param startDate - the start date of the transport document
+     * @param endDate - the end date of the transport document
+     * @param weeklyFrequency - how many transports have to be made each week
+     * @param healthcareServiceProvider - the service provider where the patient is treated
+     * @param transportationType - the type of the transportation (vehicle)
+     * @param additionalInfo - additional information to be made for the transport document
+     *
+     * @return TransportDocument - the updated TransportDocument
+     *
+     * @throws ProcessingException - thrown, when the Transport Document could not be updated
+     */
     public TransportDocument updateTransportDocument(Id<TransportDocument> transportDocumentId,
                                                      TransportReason transportReason,
                                                      Date startDate,
@@ -377,6 +555,23 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         }
     }
 
+    /**
+     * Method to update the information and patient of a TransportDocument with the given parameters
+     *
+     * @param patient - the patient that the transport document should be assigned to
+     * @param insuranceData - the insurance data to use for the transport
+     * @param transportReason - the reason of the transport
+     * @param startDate - the start date of the transport document
+     * @param endDate - the end date of the transport document
+     * @param weeklyFrequency - how many transports have to be made each week
+     * @param healthcareServiceProvider - the service provider where the patient is treated
+     * @param transportationType - the type of the transportation (vehicle)
+     * @param additionalInfo - additional information to be made for the transport document
+     *
+     * @return TransportDocument - the updated TransportDocument
+     *
+     * @throws ProcessingException - thrown, when the Transport Document could not be updated
+     */
     public TransportDocument updateTransportDocumentWithPatient(Id<TransportDocument> transportDocumentId,
                                                     Reference<Patient>patient,
                                                     Reference<InsuranceData> insuranceData,
@@ -400,6 +595,17 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         }
     }
 
+    /**
+     * Method to assign a Patient to a TransportDocument
+     *
+     * @param transportDocumentId - the Id of the TransportDocument to be updated
+     * @param patient - the Patient to be assigned
+     * @param insuranceData - the insuranceData to be assigned
+     *
+     * @return TransportDocument - the updated TransportDocument
+     *
+     * @throws ProcessingException - thrown, when the Transport Document could not be updated
+     */
     public TransportDocument assignTransportDocumentPatient(Id<TransportDocument> transportDocumentId,
                                                                 Reference<Patient>patient,
                                                                 Reference<InsuranceData> insuranceData) throws ProcessingException{
@@ -415,9 +621,19 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         }
     }
 
-    public TransportDetails createTransport(TransportDetails.Create cmd) throws ProcessingException {
+    /**
+     * Method to create a new Transport with the given parameters
+     *
+     * @param transportDocumentId - the TransportDocument the Transport should be assigned to
+     * @param date - the Date of the Transport
+     *
+     * @return TransportDetails - the created Transport
+     *
+     * @throws ProcessingException - thrown, when the Transport could not be created
+     */
+    public TransportDetails createTransport(Reference<TransportDocument> transportDocumentId, Date date) throws ProcessingException {
         try{
-            sender.sendTransportDetails(cmd);
+            sender.sendTransportDetails(new TransportDetails.Create(transportDocumentId, date));
             TransportDetails created = receiver.receiveTransportDetails();
             addTransport(created);
             return created;
@@ -427,12 +643,15 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         }
     }
 
-    public void changeLoginState(Throwable loginThrowable){
-        List<IsLoggedInListener> listeners = new ArrayList<>(this.isLoggedInListeners);
-        for(IsLoggedInListener listener : listeners)
-            listener.onLoginStateChanged(loginThrowable);
-    }
-
+    /**
+     * Method to get a valid java.sql.Date from a String
+     *
+     * @param input - the String containing a Date
+     *
+     * @return Date - the Date represented in the String
+     *
+     * @throws IllegalProcessException - thrown, when the String does not contain a valid formatted Date
+     */
     public static Date getDate(String input) throws IllegalProcessException {
         String[] possibleFormats = {"dd.MM.yy", "dd.MM.yyyy", "yyyy-MM-dd", "MM/dd/yyyy"};
         Date date = null;
@@ -456,6 +675,13 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         throw new IllegalProcessException(new IllegalArgumentException("No valid date format!"));
     }
 
+    /**
+     * Method to get the full representation of a {@link TransportationType} to be displayed
+     *
+     * @param type - the {@link TransportationType} to be displayed
+     *
+     * @return String - the {@link TransportationType}'s representation
+     */
     public static String getTransportationTypeString(TransportationType type){
         return switch(type) {
             case Taxi -> "Taxi/Mietwagen";
@@ -466,6 +692,13 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         };
     }
 
+    /**
+     * Method to get the compact representation of a {@link TransportationType} to be displayed
+     *
+     * @param type - the {@link TransportationType} to be displayed
+     *
+     * @return String - the {@link TransportationType}'s representation
+     */
     public static String getTransportationTypeCompactString(TransportationType type){
         return switch(type) {
             case Taxi -> "Taxi/Mietwagen";
@@ -476,16 +709,30 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         };
     }
 
-    public static String getPatientConditionString(PatientCondition condition){
-        return switch(condition) {
+    /**
+     * Method to get the full representation of a {@link PatientCondition} to be displayed
+     *
+     * @param patientCondition - the {@link PatientCondition} to be displayed
+     *
+     * @return String - the {@link PatientCondition}'s representation
+     */
+    public static String getPatientConditionString(PatientCondition patientCondition){
+        return switch(patientCondition) {
             case CarryingChair -> "Tragestuhl";
             case WheelChair -> "Rollstuhl";
             case LyingDown -> "liegend";
         };
     }
 
-    public static String getTransportReasonString(TransportReason reason){
-        return switch(reason) {
+    /**
+     * Method to get the full representation of a {@link TransportReason} to be displayed
+     *
+     * @param transportReason - the {@link TransportReason} to be displayed
+     *
+     * @return String - the {@link TransportReason}'s representation
+     */
+    public static String getTransportReasonString(TransportReason transportReason){
+        return switch(transportReason) {
             case EmergencyTransport -> "a1) Notfalltransport";
             case FullPartStationary -> "a2) voll-/teilstationäre Krankenhausbehandlung";
             case PrePostStationary -> "a3) vor-/nachstationäre Behandlung";
@@ -498,8 +745,15 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         };
     }
 
-    public static String getTransportReasonCompactString(TransportReason reason){
-        return switch(reason) {
+    /**
+     * Method to get the compact representation of a {@link TransportReason} to be displayed
+     *
+     * @param transportReason - the {@link TransportReason} to be displayed
+     *
+     * @return String - the {@link TransportReason}'s representation
+     */
+    public static String getTransportReasonCompactString(TransportReason transportReason){
+        return switch(transportReason) {
             case EmergencyTransport -> "a1) Notfalltransport";
             case FullPartStationary -> "a2) voll-/teilstationäre Krankenhausbehandlung";
             case PrePostStationary -> "a3) vor-/nachstationäre Behandlung";

@@ -23,6 +23,14 @@ import de.ehealth.evek.mobile.network.IsInitializedListener;
 import de.ehealth.evek.mobile.network.IsLoggedInListener;
 import de.ehealth.evek.mobile.R;
 
+/**
+ * Class belonging to the LoadingConnection Fragment
+ *
+ * @extends Fragment
+ *
+ * @implements IsInitializedListener
+ * @implements IsLoggedInListener
+ */
 public class LoadingConnectionFragment extends Fragment implements IsInitializedListener, IsLoggedInListener {
     private DataHandler handler;
     private TextView connectCounter;
@@ -73,6 +81,9 @@ public class LoadingConnectionFragment extends Fragment implements IsInitialized
         }
     }
 
+    /**
+     * Method used for updating the ConnectionCounter
+     */
     private void setConnectCounter(){
         if(connectCounter == null)
             return;

@@ -10,6 +10,11 @@ import android.view.ViewGroup;
 
 import de.ehealth.evek.mobile.R;
 
+/**
+ * Class belonging to the User MainPage Fragment
+ *
+ * @extends Fragment
+ */
 public class MainPageUserFragment extends Fragment {
 
     @Override

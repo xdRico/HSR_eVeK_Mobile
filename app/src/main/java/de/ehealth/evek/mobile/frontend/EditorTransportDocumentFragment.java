@@ -37,8 +37,14 @@ import de.ehealth.evek.mobile.R;
 import de.ehealth.evek.mobile.core.MainActivity;
 import de.ehealth.evek.mobile.network.DataHandler;
 
+/**
+ * Class belonging to the EditorTransportDocument Fragment
+ *
+ * @extends Fragment
+ *
+ * @implements SingleChoiceRecyclerAdapter.ItemClickListener
+ */
 public class EditorTransportDocumentFragment extends Fragment implements SingleChoiceRecyclerAdapter.ItemClickListener {
-
     private SingleChoiceRecyclerAdapter<TransportReason> transportReasonAdapter;
     private SingleChoiceRecyclerAdapter<TransportationType> transportationTypeAdapter;
     private Id<TransportDocument> transportDocument = null;
@@ -156,10 +162,12 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
 
         return view;
     }
-    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-    }
 
+    /**
+     * Method used for creating a TransportDocument
+     *
+     * @param view - The View calling the method
+     */
     private void createTransportDoc(View view) {
         DataHandler.instance().runOnNetworkThread(() -> {
             boolean valid = true;

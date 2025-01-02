@@ -14,19 +14,29 @@ import java.util.List;
 import de.ehealth.evek.api.entity.TransportDocument;
 import de.ehealth.evek.mobile.R;
 
+/**
+ * Class belonging to the TransportDocument Recycler Adapter
+ *
+ * @extends RecyclerView.Adapter<TransportDocumentRecyclerAdapter.ViewHolder>
+ */
 public class TransportDocumentRecyclerAdapter extends RecyclerView.Adapter<TransportDocumentRecyclerAdapter.ViewHolder>{
 
     private final List<TransportDocument> mData;
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
-    // data is passed into the constructor
+    /**
+     * Constructor of TransportDocumentRecyclerAdapter <br>
+     * Used for a RecyclerAdapter configured for displaying Transport Documents
+     *
+     * @param context - the current context
+     * @param data - List containing the TransportDocuments to display
+     */
     TransportDocumentRecyclerAdapter(Context context, List<TransportDocument> data) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
     }
 
-    // inflates the row layout from xml when needed
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -45,14 +55,14 @@ public class TransportDocumentRecyclerAdapter extends RecyclerView.Adapter<Trans
         holder.serviceProvider.setText(serviceProvider);
     }
 
-    // total number of rows
     @Override
     public int getItemCount() {
         return mData.size();
     }
 
-
-    // stores and recycles views as they are scrolled off screen
+    /**
+     * Class used for storing and recycling views as they are scrolled off screen
+     */
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         TextView patient;
@@ -60,6 +70,12 @@ public class TransportDocumentRecyclerAdapter extends RecyclerView.Adapter<Trans
         TextView transportDocument;
         TransportDocument document;
 
+        /**
+         * Constructor of ViewHolder <br>
+         * Used for storing and recycling views as they are scrolled off screen
+         *
+         * @param itemView - the View to create the ViewHolder for
+         */
         ViewHolder(View itemView) {
             super(itemView);
             itemView.setOnClickListener(this);
@@ -68,28 +84,45 @@ public class TransportDocumentRecyclerAdapter extends RecyclerView.Adapter<Trans
             serviceProvider = itemView.findViewById(R.id.tv_service_provider);
         }
 
-
         @Override
         public void onClick(View view) {
             mClickListener.onItemClick(document, getAdapterPosition());
         }
     }
 
-    // convenience method for getting data at click position
+    /**
+     * Method for getting the item at the clicked position
+     *
+     * @param id - the index/id of the Item
+     *
+     * @return TransportDocument - Item at the given index
+     */
     TransportDocument getItem(int id) {
         return mData.get(id);
     }
 
-    // allows clicks events to be caught
+    /**
+     * Method to set the ItemClickListener
+     *
+     * @param itemClickListener - the ItemClickListener to be set
+     */
     void setClickListener(ItemClickListener itemClickListener) {
         this.mClickListener = itemClickListener;
     }
 
-    // parent activity will implement this method to respond to click events
+    /**
+     * Interface used as Listener for performing click events
+     */
     public interface ItemClickListener {
         //void onItemClick(View view, int position);
-        void onItemClick(TransportDocument obj, int position);
         //<T> void clickedItem(T item);
-    }
 
+        /**
+         * Method called on Item Click
+         *
+         * @param obj - the clicked Object
+         * @param position - the position of the clicked Item
+         */
+        void onItemClick(TransportDocument obj, int position);
+    }
 }

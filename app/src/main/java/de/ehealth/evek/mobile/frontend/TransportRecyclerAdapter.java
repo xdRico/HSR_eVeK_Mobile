@@ -18,24 +18,38 @@ import de.ehealth.evek.api.entity.TransportDetails;
 import de.ehealth.evek.api.type.Id;
 import de.ehealth.evek.mobile.R;
 
+/**
+ * Class belonging to the Transport Recycler Adapter
+ *
+ * @extends RecyclerView.Adapter<TransportRecyclerAdapter.ViewHolder>
+ */
 public class TransportRecyclerAdapter extends RecyclerView.Adapter<TransportRecyclerAdapter.ViewHolder>{
 
     private final List<TransportDetailsWithServiceProvider> mData;
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
+    /**
+     * Record used for passing TransportDetails with a given ServiceProvider
+     *
+     * @param transportDetails - the TransportDetails to be passed
+     * @param serviceProviderId - the ServiceProvider Id to be passed
+     */
     public record TransportDetailsWithServiceProvider(TransportDetails transportDetails,
                                                       Id<ServiceProvider> serviceProviderId) {
     }
 
-    // data is passed into the constructor
-    TransportRecyclerAdapter(Context context, List<TransportDetailsWithServiceProvider> data) {
+    /**
+     * Constructor of TransportRecyclerAdapter <br>
+     * Used for a RecyclerAdapter configured for displaying Transports
+     *
+     * @param context - the current context
+     * @param data - List containing the Transports with Service Provider to display
+     */    TransportRecyclerAdapter(Context context, List<TransportDetailsWithServiceProvider> data) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
-
     }
 
-    // inflates the row layout from xml when needed
     @NonNull
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -58,17 +72,16 @@ public class TransportRecyclerAdapter extends RecyclerView.Adapter<TransportRecy
         holder.transportDocument.setText(transportDocument);
         SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY);
         holder.date.setText(formatter.format(details.transportDate().getTime()));
-
     }
 
-    // total number of rows
     @Override
     public int getItemCount() {
         return mData.size();
     }
 
-
-    // stores and recycles views as they are scrolled off screen
+    /**
+     * Class used for storing and recycling views as they are scrolled off screen
+     */
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         TextView transportDocument;
@@ -77,7 +90,12 @@ public class TransportRecyclerAdapter extends RecyclerView.Adapter<TransportRecy
         TextView date;
         TransportDetails details;
 
-
+        /**
+         * Constructor of ViewHolder <br>
+         * Used for storing and recycling views as they are scrolled off screen
+         *
+         * @param itemView - the View to create the ViewHolder for
+         */
         ViewHolder(View itemView) {
             super(itemView);
             itemView.setOnClickListener(this);
@@ -87,28 +105,45 @@ public class TransportRecyclerAdapter extends RecyclerView.Adapter<TransportRecy
             transportServiceProvider = itemView.findViewById(R.id.tv_transport_provider);
         }
 
-
         @Override
         public void onClick(View view) {
             mClickListener.onItemClick(details, getAdapterPosition());
         }
     }
 
-    // convenience method for getting data at click position
+    /**
+     * Method for getting the item at the clicked position
+     *
+     * @param id - the index/id of the Item
+     *
+     * @return TransportDetails - Item at the given index
+     */
     TransportDetails getItem(int id) {
         return mData.get(id).transportDetails();
     }
 
-    // allows clicks events to be caught
+    /**
+     * Method to set the ItemClickListener
+     *
+     * @param itemClickListener - the ItemClickListener to be set
+     */
     void setClickListener(ItemClickListener itemClickListener) {
         this.mClickListener = itemClickListener;
     }
 
-    // parent activity will implement this method to respond to click events
+    /**
+     * Interface used as Listener for performing click events
+     */
     public interface ItemClickListener {
         //void onItemClick(View view, int position);
-        void onItemClick(TransportDetails obj, int position);
         //<T> void clickedItem(T item);
-    }
 
+        /**
+         * Method called on Item Click
+         *
+         * @param obj - the clicked Object
+         * @param position - the position of the clicked Item
+         */
+        void onItemClick(TransportDetails obj, int position);
+    }
 }

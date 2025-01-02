@@ -17,6 +17,11 @@ import de.ehealth.evek.api.network.ComClientSender;
 
 import de.ehealth.evek.api.util.Log;
 
+/**
+ * Class used for Communication to the Server
+ *
+ * @implements IsInitializedListener
+ */
 public class ServerConnection implements IsInitializedListener {
     private int serverPort = 12013;
     private int timesToTryConnect = 15;
@@ -31,29 +36,85 @@ public class ServerConnection implements IsInitializedListener {
     private Socket server;
     private final List<IsInitializedListener> isInitializedListeners = new ArrayList<>();
 
+    /**
+     * Method to get the current {@link IComClientSender}
+     *
+     * @return {@link IComClientSender} - the current {@link IComClientSender}
+     */
     IComClientSender getComClientSender(){ return sender; }
+
+    /**
+     * Method to get the current {@link IComClientReceiver}
+     *
+     * @return {@link IComClientReceiver} - the current {@link IComClientReceiver}
+     */
     IComClientReceiver getComClientReceiver() { return receiver; }
+
+    /**
+     * Method to set the Server Address to be connected with
+     *
+     * @param serverAddress - String representing the Servers Address
+     */
     void setServerAddress (String serverAddress){
         this.serverAddress = serverAddress;
     }
+
+    /**
+     * Method to set the Server Port to be connected with
+     *
+     * @param serverPort - int representing the Servers Port
+     */
     void setServerPort (int serverPort){
         this.serverPort = serverPort;
     }
 
+    /**
+     * Method to get the current count of connection tries
+     *
+     * @return int - the count of tries to connect to the server
+     */
     public int getTimesTriedToConnect(){ return timesTriedToConnect +1; }
+
+    /**
+     * Method to get the maximum amount of connection tries
+     *
+     * @return int - the amount of maximum tries to connect to the server
+     */
     public int getTimesToTryConnect(){ return timesToTryConnect; }
+
+    /**
+     * Method to get if the Server Connection has been initialized
+     *
+     * @return boolean - if the Server Connection has been initialized
+     */
     boolean isInitialized(){
         return isInitialized;
     }
 
+    /**
+     * Method to add {@link IsInitializedListener}'s to be called on Initialization state changes
+     *
+     * @param listener - the {@link IsInitializedListener} to be added
+     */
     public void addIsInitializedListener(IsInitializedListener listener){
         if(!isInitializedListeners.contains(listener))
             isInitializedListeners.add(listener);
     }
+
+    /**
+     * Method to remove a {@link IsInitializedListener} from being called on Initialization state changes
+     *
+     * @param listener - the {@link IsInitializedListener} to be removed
+     */
     public void removeIsInitializedListener(IsInitializedListener listener){
         isInitializedListeners.remove(listener);
     }
 
+    /**
+     * Method to set the Initialization state and notify the {@link IsInitializedListener}'s
+     *
+     * @param isInitialized - if the Connection has been successfully initialized
+     */
     private void setInitialized(boolean isInitialized){
         this.isInitialized = isInitialized;
         for(IsInitializedListener listener : isInitializedListeners){
@@ -72,6 +133,11 @@ public class ServerConnection implements IsInitializedListener {
                 : "Network Thread could not be started up!");
     }
 
+    /**
+     * Method to initialize the Server connection with the currently set Network properties
+     *
+     * @throws IllegalStateException - thrown, when the initialization could not be finished
+     */
     void initConnection() throws IllegalStateException {
         if (isInitialized)
             throw new IllegalStateException("Connection already initialized!");
@@ -123,9 +189,15 @@ public class ServerConnection implements IsInitializedListener {
         }).start();
     }
 
+    /**
+     * Method to be called to close and reset the current server connection. <br>
+     * The connection isn't restarted!
+     *
+     * @throws IllegalProcessException - thrown, when the connection could not be reset
+     */
     void resetConnection() throws IllegalProcessException {
         if(!isInitialized)
-            throw new IllegalProcessException("Connection already initialized!");
+            throw new IllegalProcessException("Connection not initialized!");
         try {
             server.close();
             setInitialized(false);

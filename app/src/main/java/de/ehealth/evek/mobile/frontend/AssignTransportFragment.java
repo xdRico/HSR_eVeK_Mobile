@@ -25,6 +25,11 @@ import de.ehealth.evek.mobile.R;
 import de.ehealth.evek.mobile.core.MainActivity;
 import de.ehealth.evek.mobile.network.DataHandler;
 
+/**
+ * Class belonging to the AssignTransport Fragment
+ *
+ * @extends Fragment
+ */
 public class AssignTransportFragment extends Fragment {
 
 
@@ -110,6 +115,12 @@ public class AssignTransportFragment extends Fragment {
         return view;
     }
 
+    /**
+     * Method to generate the Bitmap of an QR Code for assigning the transport
+     *
+     * @param text - the id of the transport to assign as String
+     * @return Bitmap - the bitmap to generate the QR Code from
+     */
     public Bitmap generateQRCode(String text) {
         QRCodeWriter writer = new QRCodeWriter();
         try {

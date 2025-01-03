@@ -70,6 +70,6 @@ public class ClientMain {
      */
     private void setContext(Context context){
         this.context = context;
-        DataHandler.instance().initUserStorage();
+        DataHandler.instance().initStorage();
     }
 }

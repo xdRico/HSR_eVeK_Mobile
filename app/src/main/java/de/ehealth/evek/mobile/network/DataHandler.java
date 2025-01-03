@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import de.ehealth.evek.api.entity.InsuranceData;
 import de.ehealth.evek.api.entity.Patient;
@@ -71,7 +72,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
     private SharedPreferences encryptedSharedPreferences;
 
     private boolean storeNextUser = false;
-    private boolean validUserStoring = false;
+    private boolean validStoring = false;
 
     private final ServerConnection serverConnection = new ServerConnection();
 
@@ -139,10 +140,10 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
     /**
      * Method for initializing storing Users for staying logged in
      */
-    public void initUserStorage(){
+    public void initStorage(){
         MasterKey masterKey = null;
         SharedPreferences encryptedSharedPreferences = null;
-        validUserStoring = false;
+        validStoring = false;
         try{
             addIsLoggedInListener(this);
             masterKey = new MasterKey.Builder(ClientMain.instance().getContext())
@@ -162,9 +163,9 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
             Log.sendException(e);
         }
         if(masterKey != null && encryptedSharedPreferences != null)
-            validUserStoring = true;
+            validStoring = true;
         this.encryptedSharedPreferences = encryptedSharedPreferences;
-        if (validUserStoring)
+        if (validStoring)
             Log.sendMessage("UserStorage successfully set up!");
     }
 
@@ -281,8 +282,36 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
             }
         }
         transportDocumentIDs.add(transportDocument.id());
+
+        if(!validStoring)
+            return;
+
+        List<String> stringIDs = new ArrayList<>();
+        for(Id<TransportDocument> documents : transportDocumentIDs)
+            stringIDs.add(documents.value());
+
+        Set<String> transportDocuments = Set.copyOf(stringIDs);
+
+        SharedPreferences.Editor editor = encryptedSharedPreferences.edit();
+        editor.putStringSet("eVeK-transportdocuments", transportDocuments);
+        editor.apply();
     }
 
+    /**
+     * Method to load the recent TransportDocuments of the User
+     */
+    private void loadTransportDocuments(){
+        if(!validStoring)
+            return;
+        SharedPreferences editor = encryptedSharedPreferences;
+        Set<String> ids = editor.getStringSet("eVeK-transportdocuments", null);
+
+        if(ids == null)
+            return;
+
+        for(String id : ids)
+            transportDocumentIDs.add(new Id<>(id));
+    }
 
     /**
      * Method to get a Transport by its Id
@@ -340,6 +369,35 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
             }
         }
         transportDetailIDs.add(transportDetails.id());
+
+        if(!validStoring)
+            return;
+
+        List<String> stringIDs = new ArrayList<>();
+        for(Id<TransportDetails> detail : transportDetailIDs)
+            stringIDs.add(detail.value());
+
+        Set<String> transports = Set.copyOf(stringIDs);
+
+        SharedPreferences.Editor editor = encryptedSharedPreferences.edit();
+        editor.putStringSet("eVeK-transports", transports);
+        editor.apply();
+    }
+
+    /**
+     * Method to load the recent Transports of the User
+     */
+    private void loadTransports(){
+        if(!validStoring)
+            return;
+        SharedPreferences editor = encryptedSharedPreferences;
+        Set<String> ids = editor.getStringSet("eVeK-transports", null);
+
+        if(ids == null)
+            return;
+
+        for(String id : ids)
+            transportDetailIDs.add(new Id<>(id));
     }
 
     /**
@@ -380,11 +438,11 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      * @return boolean - if a user has been logged in
      */
     public boolean tryLoginFromStoredCredentials(){
-        if(!validUserStoring)
+        if(!validStoring)
             return false;
             // Passwort abrufen
-        String savedPassword = encryptedSharedPreferences.getString("eVeKpassword", null);
-        String savedUser = encryptedSharedPreferences.getString("eVeKusername", null);
+        String savedPassword = encryptedSharedPreferences.getString("eVeK-password", null);
+        String savedUser = encryptedSharedPreferences.getString("eVeK-username", null);
 
         if (savedPassword != null && savedUser != null
                 && !savedPassword.isBlank() && !savedUser.isBlank()) {
@@ -422,24 +480,30 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
             } catch(Exception e){
                 t = e;
             }
-
+            SharedPreferences.Editor editor = encryptedSharedPreferences.edit();
             if(!(t instanceof UserLoggedInThrowable)) {
                 this.loginUser = null;
-                if(validUserStoring){
-                    SharedPreferences.Editor editor = encryptedSharedPreferences.edit();
-                    editor.putString("eVeKpassword", null);
-                    editor.putString("eVeKusername", null);
+                if(validStoring){
+                    editor.putString("eVeK-password", null);
                     editor.apply();
                 }
                 Log.sendMessage("User " + username + " could not be logged in!");
                 Log.sendException(t);
             }else{
                 Log.sendMessage("User " + username + " successfully logged in!");
+                if(validStoring){
+                    SharedPreferences pref = encryptedSharedPreferences;
+                    String oldUsername;
+                    if((oldUsername = pref.getString("eVeK-username", null)) != null
+                            && oldUsername.equalsIgnoreCase(username)){
+                        loadTransports();
+                        loadTransportDocuments();
+                    } else clearTransportCache();
+                }
                 if(storeNextUser){
-                    if(validUserStoring){
-                        SharedPreferences.Editor editor = encryptedSharedPreferences.edit();
-                        editor.putString("eVeKpassword", password);
-                        editor.putString("eVeKusername", username);
+                    if(validStoring){
+                        editor.putString("eVeK-password", password);
+                        editor.putString("eVeK-username", username);
                         editor.apply();
                         Log.sendMessage("User " + username + " successfully saved for auto login!");
                     }else{
@@ -462,15 +526,29 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
             throw new IllegalProcessException(new UserNotProvidedException("No user logged in!"));
         loginUser = null;
         SharedPreferences.Editor editor = encryptedSharedPreferences.edit();
-        editor.putString("eVeKpassword", null);
-        editor.putString("eVeKusername", null);
+        editor.remove("eVeK-password");
         editor.apply();
+        clearTransportCache();
         try{
             serverConnection.resetConnection();
         }catch(IllegalProcessException e){
             Log.sendException(e);
         }
         changeLoginState(new UserLogoutThrowable());
+    }
+
+    /**
+     * Method to clear the cache of Transports and TransportDocuments
+     */
+    private void clearTransportCache(){
+        if(!validStoring)
+            return;
+        transportDocumentIDs.clear();
+        transportDetailIDs.clear();
+        SharedPreferences.Editor editor = encryptedSharedPreferences.edit();
+        editor.remove("eVeK-transports");
+        editor.remove("eVeK-transportdocuments");
+        editor.apply();
     }
 
     @Override

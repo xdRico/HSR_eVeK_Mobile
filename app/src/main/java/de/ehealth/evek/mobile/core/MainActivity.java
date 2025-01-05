@@ -19,6 +19,9 @@ import de.ehealth.evek.api.exception.UserNotProvidedException;
 import de.ehealth.evek.api.util.Log;
 import de.ehealth.evek.mobile.databinding.ActivityMainBinding;
 import de.ehealth.evek.mobile.R;
+import de.ehealth.evek.mobile.frontend.alert.ChoiceAlert;
+import de.ehealth.evek.mobile.frontend.alert.ExceptionAlert;
+import de.ehealth.evek.mobile.frontend.alert.InformationAlert;
 import de.ehealth.evek.mobile.network.DataHandler;
 import de.ehealth.evek.mobile.frontend.QRScannerActivity;
 
@@ -56,7 +59,7 @@ public class MainActivity extends AppCompatActivity {
         && (navState = savedInstanceState.getBundle("nav_state")) != null
         && (navGraph = savedInstanceState.getString("nav_graph")) != null){
             navController.restoreState(navState);
-            Log.sendMessage(String.format("%s ?= %s", navGraph, "nav_graph_doctor"));
+            //DEBUG Log.sendMessage(String.format("%s ?= %s", navGraph, "nav_graph_doctor"));
             if(navGraph.equalsIgnoreCase("nav_graph_doctor"))
                 navController.setGraph(R.navigation.nav_graph_doctor);
             else if(navGraph.equalsIgnoreCase("nav_graph_user"))
@@ -67,8 +70,10 @@ public class MainActivity extends AppCompatActivity {
         } else navController.setGraph(R.navigation.nav_graph);
 
 
-        navController.addOnDestinationChangedListener((controller, destination, arguments) ->
-                setQRScanEnabled(destination.getId() == R.id.mainPageDoctorFragment || destination.getId() == R.id.mainPageUserFragment));
+        navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+            setQRScanEnabled(destination.getId() == R.id.mainPageDoctorFragment || destination.getId() == R.id.mainPageUserFragment);
+            setNavigation(destination.getId() == R.id.loginUserFragment || destination.getId() == R.id.loadingConnectionFragment);
+        });
         try {
             appBarConfiguration = new AppBarConfiguration.Builder(navController.getGraph()).build();
             NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
@@ -76,7 +81,6 @@ public class MainActivity extends AppCompatActivity {
         }catch (IllegalStateException e){
             Log.sendException(e);
         }
-        setNavigation(false);
         setQRScanEnabled(false);
     }
 
@@ -105,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (graphId == R.id.nav_graph_user) {
                 navGraphName = "nav_graph_user";
             } else {
-                navGraphName = "nav_graph"; // Standardwert
+                navGraphName = "nav_graph";
             }
             outState.putString("nav_graph", navGraphName);
 
@@ -264,12 +268,7 @@ public class MainActivity extends AppCompatActivity {
      * @param title - the title for the Alert
      */
     public void exceptionAlert(Throwable e, String title){
-        runOnUiThread(() -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder.setTitle(title);
-            builder.setMessage(e.getLocalizedMessage());
-            builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).show();
-        });
+        runOnUiThread(() -> ExceptionAlert.showDialog(getSupportFragmentManager(), title, e));
     }
 
     /**
@@ -279,33 +278,18 @@ public class MainActivity extends AppCompatActivity {
      * @param title - the Title for the Alert
      */
     public void informationAlert(String message, String title) {
-        runOnUiThread(() -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder.setTitle(title);
-            builder.setMessage(message);
-            builder.setPositiveButton("OK", (dialog, which) -> dialog.dismiss()).show();
-        });
+        runOnUiThread(() -> InformationAlert.showDialog(getSupportFragmentManager(), title, message));
     }
 
     /**
-     * Method to create a new Alert displaying a message and containing two custom buttons
+     * Method to create a new Alert displaying a message
      *
      * @param message - the String to be displayed
-     * @param title - the title for the Alert
-     * @param buttonLeftText - the text to set for the left Button
-     * @param buttonLeftListener - the Listener to be performed on click of the left Button
-     * @param buttonRightText- the text to set for the right Button
-     * @param buttonRightListener - the Listener to be performed on click of the right Button
+     * @param title - the Title for the Alert
+     * @param confirm - the Message to show on the confirm button
      */
-    public void choiceAlert(String message, String title, String buttonLeftText, DialogInterface.OnClickListener buttonLeftListener, String buttonRightText, DialogInterface.OnClickListener buttonRightListener) {
-        runOnUiThread(() -> {
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder.setTitle(title);
-            builder.setMessage(message);
-            builder.setNegativeButton(buttonLeftText, buttonLeftListener);
-            builder.setPositiveButton(buttonRightText, buttonRightListener);
-            builder.show();
-        });
+    public void informationAlert(String message, String title, String confirm) {
+        runOnUiThread(() -> InformationAlert.showDialog(getSupportFragmentManager(), title, message, confirm));
     }
 
     /**
@@ -319,6 +303,20 @@ public class MainActivity extends AppCompatActivity {
      */
     public void choiceAlert(String message, String title, String buttonCancelText, String buttonConfirmText, DialogInterface.OnClickListener buttonConfirmListener) {
         choiceAlert(message, title, buttonCancelText, (dialog, var) -> dialog.dismiss(), buttonConfirmText, buttonConfirmListener);
+    }
+
+    /**
+     * Method to create a new Alert displaying a message and containing two custom buttons
+     *
+     * @param message - the String to be displayed
+     * @param title - the title for the Alert
+     * @param buttonLeftText - the text to set for the left Button
+     * @param buttonLeftListener - the Listener to be performed on click of the left Button
+     * @param buttonRightText- the text to set for the right Button
+     * @param buttonRightListener - the Listener to be performed on click of the right Button
+     */
+    public void choiceAlert(String message, String title, String buttonLeftText, DialogInterface.OnClickListener buttonLeftListener, String buttonRightText, DialogInterface.OnClickListener buttonRightListener) {
+        runOnUiThread(() -> ChoiceAlert.showDialog(getSupportFragmentManager(), title, message, buttonLeftText, buttonLeftListener, buttonRightText, buttonRightListener));
     }
 
     /**
@@ -336,6 +334,7 @@ public class MainActivity extends AppCompatActivity {
     public void choiceAlert(String message, String title, String buttonLeftText, DialogInterface.OnClickListener buttonLeftListener,
                             String buttonCenterText, DialogInterface.OnClickListener buttonCenterListener, String buttonRightText, DialogInterface.OnClickListener buttonRightListener) {
         runOnUiThread(() -> {
+            //TODO
             AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
             builder.setTitle(title);
             builder.setMessage(message);

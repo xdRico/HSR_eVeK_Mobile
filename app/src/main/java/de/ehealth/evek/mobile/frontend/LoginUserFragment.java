@@ -12,7 +12,6 @@ import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.NavGraph;
@@ -36,9 +35,6 @@ public class LoginUserFragment extends Fragment implements IsLoggedInListener {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if(getActivity() != null && getActivity() instanceof MainActivity)
-            ((MainActivity) getActivity()).setNavigation(false);
     }
 
     @Override
@@ -101,10 +97,7 @@ public class LoginUserFragment extends Fragment implements IsLoggedInListener {
                     ((TextView) getView().findViewById(R.id.tv_login_error)).setText(loginState.toString());
                     getView().findViewById(R.id.cl_login_error_box).setVisibility(View.VISIBLE);
                 }
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                builder.setTitle("Wrong credentials");
-                builder.setMessage("Entered credentials do not match!");
-                builder.setNegativeButton("Correct", (dialog, which) -> dialog.dismiss()).show();
+                ((MainActivity) getActivity()).informationAlert("Entered credentials do not match!", "Wrong credentials", "Correct");
 
             });
             return;

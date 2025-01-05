@@ -56,12 +56,8 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         return instance == null ? (instance = new DataHandler()) : instance;
     }
 
-    private static final int SERVER_PORT = 12013;
-
-    //private static final String SERVER_ADDRESS = "192.168.1.9";
-    //private static final String SERVER_ADDRESS = "192.168.1.6";
-    //private static final String SERVER_ADDRESS = "192.168.56.1";
-    private static final String SERVER_ADDRESS = "149.172.224.72";
+    private static final int SERVER_PORT = PrivateInfo.SERVER_PORT;
+    private static final String SERVER_ADDRESS = PrivateInfo.SERVER_ADDRESS;
 
     private Thread networkThread;
     private Handler networkHandler;

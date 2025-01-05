@@ -16,7 +16,6 @@ import java.util.Locale;
 
 import de.ehealth.evek.api.util.Log;
 
-import de.ehealth.evek.mobile.core.MainActivity;
 import de.ehealth.evek.mobile.exception.UserLoggedInThrowable;
 import de.ehealth.evek.mobile.network.DataHandler;
 import de.ehealth.evek.mobile.network.IsInitializedListener;
@@ -39,9 +38,6 @@ public class LoadingConnectionFragment extends Fragment implements IsInitialized
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        if(getActivity() != null && getActivity() instanceof MainActivity)
-            ((MainActivity) getActivity()).setNavigation(false);
     }
 
     @Override

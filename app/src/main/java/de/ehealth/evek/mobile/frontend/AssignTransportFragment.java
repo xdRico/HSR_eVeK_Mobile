@@ -74,8 +74,8 @@ public class AssignTransportFragment extends Fragment {
                     handler.tryAssignTransport(transportID);
                     if (getActivity() == null)
                         return;
-                    ((MainActivity) getActivity()).choiceAlert("Transport wurde erfolgreich zugewiesen!\n\r\n\rSoll der Transport bearbeitet werden?",
-                            "Transport wurde zugewiesen!", "Nein",
+                    ((MainActivity) getActivity()).choiceAlert("Transport wurde zugewiesen!","Transport wurde erfolgreich zugewiesen!\n\r\n\rSoll der Transport bearbeitet werden?",
+                             "Nein",
                             (dialog, which) -> {
                                 if (getActivity() != null) {
                                     NavController navController = NavHostFragment.findNavController(AssignTransportFragment.this);
@@ -107,8 +107,7 @@ public class AssignTransportFragment extends Fragment {
                 } catch (IllegalProcessException e) {
                     Log.sendException(e);
                     if(getActivity() != null)
-                        ((MainActivity) getActivity()).informationAlert(e.getLocalizedMessage(),
-                                "Transport konnte nicht zugewiesen werden!");
+                        ((MainActivity) getActivity()).exceptionAlert("Transport konnte nicht zugewiesen werden!", e);
                 }
             }));
         }
@@ -118,8 +117,8 @@ public class AssignTransportFragment extends Fragment {
     /**
      * Method to generate the Bitmap of an QR Code for assigning the transport
      *
-     * @param text - the id of the transport to assign as String
-     * @return Bitmap - the bitmap to generate the QR Code from
+     * @param text the id of the transport to assign as String
+     * @return Bitmap the bitmap to generate the QR Code from
      */
     public Bitmap generateQRCode(String text) {
         QRCodeWriter writer = new QRCodeWriter();

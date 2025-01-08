@@ -47,6 +47,7 @@
     <string name="content_fragment_editor_transport_doc_tv_if_durational">Bei Mehrfachtransport:</string>
     <string name="content_fragment_editor_transport_doc_tv_patient_condition_info">Patientenzustand:</string>
     <string name="content_fragment_editor_transport_doc_btn_save_transport_doc">Speichern</string>
+    <string name="content_fragment_editor_transport_doc_btn_edit_transport_doc">Bearbeiten</string>
     <string name="hint_fragment_editor_transport_doc_et_insurance_number">Vers.-nummer</string>
     <string name="hint_fragment_editor_transport_doc_et_start_date">Startdatum</string>
     <string name="hint_fragment_editor_transport_doc_et_end_date">Enddatum</string>
@@ -54,6 +55,7 @@
     <string name="hint_fragment_editor_transport_doc_tv_service_provider">Behandlungsstätte</string>
     <string name="hint_fragment_editor_transport_doc_et_info">Weitere Informationen</string>
 
+    <!-- Strings for TransportEditor -->
     <string name="content_fragment_editor_transport_tv_transport_data">Transportdaten</string>
     <string name="hint_fragment_editor_transport_et_transport_doc_id">Transportschein ID</string>
     <string name="hint_fragment_editor_transport_et_transport_date">Transportdatum</string>

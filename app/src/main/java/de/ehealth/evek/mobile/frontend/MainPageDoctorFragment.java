@@ -108,9 +108,25 @@ public class MainPageDoctorFragment extends Fragment implements TransportDocumen
         if(getActivity() == null
                 || navController.getCurrentDestination() == null
                 || navController.getCurrentDestination().getId() != R.id.mainPageDoctorFragment) return;
-        Bundle bundle = new Bundle();
-        bundle.putString("transportDocumentID", obj.id().value());
-        getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_editorTransportDocFragment, bundle));
+        MainActivity activity = (MainActivity) getActivity();
+        activity.choiceAlert("Transportschein bearbeiten oder Transport erstellen?",
+                "Soll der Transportschein bearbeitet oder überprüft werden oder soll ein neuer Transport für den Transportschein angelegt werden?",
+        "Bearbeiten/überprüfen",
+                (dialog, which) -> {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("transportDocumentID", obj.id().value());
+                    getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_editorTransportDocFragment, bundle));
+                    dialog.dismiss();
+                },
+                "Transport erstellen",
+                (dialog, which) -> {
+                    Bundle bundle = new Bundle();
+                    bundle.putString("transportDocumentID", obj.id().value());
+                    navController.navigate(R.id.action_mainPageDoctorFragment_to_editorTransportCreateFragment, bundle);
+                    dialog.dismiss();
+
+                });
+
 
     }
 

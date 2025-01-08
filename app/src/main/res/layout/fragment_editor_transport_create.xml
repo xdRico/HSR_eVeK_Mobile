@@ -13,7 +13,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:paddingBottom="150dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraint_patient_data"
@@ -62,22 +63,20 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/constraint_save"
+                android:id="@+id/constraint_edit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingStart="30dp"
-                android:paddingEnd="30dp"
-                android:paddingBottom="120dp">
+                android:paddingEnd="30dp">
 
                 <Button
                     android:id="@+id/btn_save_transport"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="40dp"
                     android:text="@string/content_fragment_editor_transport_btn_save_transport"
-                    app:layout_constraintEnd_toEndOf="@+id/constraint_save"
-                    app:layout_constraintStart_toStartOf="@+id/constraint_save"
-                    app:layout_constraintTop_toTopOf="@+id/constraint_save" />
+                    app:layout_constraintEnd_toEndOf="@+id/constraint_edit"
+                    app:layout_constraintStart_toStartOf="@+id/constraint_edit"
+                    app:layout_constraintTop_toTopOf="@+id/constraint_edit" />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </LinearLayout>
     </ScrollView>

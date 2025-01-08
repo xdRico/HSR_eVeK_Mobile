@@ -86,7 +86,8 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
         recyclerView.setAdapter(transportationTypeAdapter);
 
 
-        view.findViewById(R.id.btn_save_transport).setOnClickListener((v) -> createTransportDoc(view));
+        view.findViewById(R.id.btn_save_transportdoc).setOnClickListener((v) -> createTransportDoc(view));
+        view.findViewById(R.id.btn_edit_transportdoc).setOnClickListener((v) -> setEditable(true, view));
 
         EditText insuranceNumber = view.findViewById(R.id.et_insurance_number);
         insuranceNumber.addTextChangedListener(new TextWatcher() {
@@ -154,6 +155,7 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
                     transportationTypeAdapter.setActiveItem(document.transportationType());
                     if(document.additionalInfo().isPresent())
                         ((EditText) view.findViewById(R.id.et_info)).setText(document.additionalInfo().get());
+                    setEditable(false, view);
                 });
             }catch(IllegalProcessException e){
                 Log.sendMessage("Transport konnte nicht geladen werden!");
@@ -164,9 +166,31 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
     }
 
     /**
+     * Method used for setting the edit fields editable or uneditable.
+     *
+     * @param editable if the fields should be editable
+     */
+    public void setEditable(boolean editable, View view){
+        view.findViewById(R.id.et_insurance_number).setEnabled(editable);
+        view.findViewById(R.id.rv_transport_reason).setEnabled(editable);
+        view.findViewById(R.id.et_transport_date).setEnabled(editable);
+        view.findViewById(R.id.et_service_provider).setEnabled(editable);
+        view.findViewById(R.id.et_weekly_frequency).setEnabled(editable);
+        view.findViewById(R.id.et_end_date).setEnabled(editable);
+        view.findViewById(R.id.rv_transportation_type).setEnabled(editable);
+        view.findViewById(R.id.et_info).setEnabled(editable);
+        view.findViewById(R.id.constraint_save).setVisibility(editable ? View.VISIBLE : View.GONE);
+        view.findViewById(R.id.constraint_save).setEnabled(editable);
+        view.findViewById(R.id.constraint_edit).setVisibility(!editable ? View.VISIBLE : View.GONE);
+        view.findViewById(R.id.constraint_edit).setEnabled(!editable);
+        transportReasonAdapter.setEditable(editable);
+        transportationTypeAdapter.setEditable(editable);
+    }
+
+    /**
      * Method used for creating a TransportDocument
      *
-     * @param view - The View calling the method
+     * @param view The View calling the method
      */
     private void createTransportDoc(View view) {
         DataHandler.instance().runOnNetworkThread(() -> {
@@ -255,15 +279,17 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
             }catch(IllegalProcessException | ProcessingException e){
                 if(getActivity() == null)
                     return;
-                ((MainActivity) getActivity()).exceptionAlert(e, "Transportschein konnte nicht erstellt werden!");
+                ((MainActivity) getActivity()).exceptionAlert("Transportschein konnte nicht erstellt werden!", e);
             }
             if(getActivity() == null
                     || transportDocument == null)
                 return;
 
             TransportDocument finalTransportDocument = transportDocument;
-            ((MainActivity) getActivity()).choiceAlert("Transportschein wurde erfolgreich mit ID " + transportDocument.id().value() + " erstellt! \n\r\n\rSoll ein Transport für den Transportschein erstellt werden?",
-                    "Transportschein wurde erstellt!", "Nein",
+            ((MainActivity) getActivity()).choiceAlert(
+                    "Transportschein wurde erstellt!",
+                    "Transportschein wurde erfolgreich mit ID " + transportDocument.id().value() + " erstellt! \n\r\n\rSoll ein Transport für den Transportschein erstellt werden?",
+                     "Nein",
                     (dialog, which) -> {
                         if(getActivity() != null){
 

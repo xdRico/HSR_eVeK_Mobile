@@ -126,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.btn_logout) {
 
-            choiceAlert("Durch das abmelden werden die aktuellen Transportscheine und Transporte aus der App entfernt und können nur noch über die IDs abgerufen werden!", "Abmelden?",
+            choiceAlert("Abmelden?","Durch das abmelden werden die aktuellen Transportscheine und Transporte aus der App entfernt und können nur noch über die IDs abgerufen werden!",
                     "Nein, angemeldet bleiben!", "Ja, abmelden!", (dialog, var) -> {
                         DataHandler handler = DataHandler.instance();
                         handler.runOnNetworkThread(() -> {
@@ -184,8 +184,8 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Method to set the Button for Scanning QR-Codes enabled or disabled and setting the title for the NavigationBar
      *
-     * @param elementVisible - boolean if the qr scan is enabled
-     * @param title - the title to set for the page
+     * @param elementVisible boolean if the qr scan is enabled
+     * @param title the title to set for the page
      *
      * @return boolean - if the action could be performed
      */
@@ -203,9 +203,9 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Method to set the Button for Scanning QR-Codes enabled or disabled
      *
-     * @param elementVisible - boolean if the qr scan is enabled
+     * @param elementVisible boolean if the qr scan is enabled
      *
-     * @return boolean - if the action could be performed
+     * @return boolean if the action could be performed
      */
     public boolean setQRScanEnabled(boolean elementVisible){
         return setQRScanEnabled(elementVisible, getString(R.string.app_name));
@@ -214,9 +214,9 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Method to set the Button for Navigation enabled or disabled
      *
-     * @param elementVisible - boolean if the navigation element is enabled
+     * @param elementVisible boolean if the navigation element is enabled
      *
-     * @return boolean - if the action could be performed
+     * @return boolean if the action could be performed
      */
     public boolean setNavigation(boolean elementVisible){
         if(getSupportActionBar() == null)
@@ -256,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
 
             }catch(IllegalProcessException e){
                 Log.sendException(e);
-                exceptionAlert(e, "Error assigning Transport Provider!");
+                exceptionAlert("Error assigning Transport Provider!", e);
             }
         });
     });
@@ -264,74 +264,74 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Method to create a new Alert displaying an exception
      *
-     * @param e - the exception to be displayed
-     * @param title - the title for the Alert
+     * @param title the title for the Alert
+     * @param e the exception to be displayed
      */
-    public void exceptionAlert(Throwable e, String title){
+    public void exceptionAlert(String title, Throwable e){
         runOnUiThread(() -> ExceptionAlert.showDialog(getSupportFragmentManager(), title, e));
     }
 
     /**
      * Method to create a new Alert displaying a message
      *
-     * @param message - the String to be displayed
-     * @param title - the Title for the Alert
+     * @param title the title for the Alert
+     * @param message the String to be displayed
      */
-    public void informationAlert(String message, String title) {
+    public void informationAlert(String title, String message) {
         runOnUiThread(() -> InformationAlert.showDialog(getSupportFragmentManager(), title, message));
     }
 
     /**
      * Method to create a new Alert displaying a message
      *
-     * @param message - the String to be displayed
-     * @param title - the Title for the Alert
-     * @param confirm - the Message to show on the confirm button
+     * @param title the title for the Alert
+     * @param message the String to be displayed
+     * @param confirm the Message to show on the confirm button
      */
-    public void informationAlert(String message, String title, String confirm) {
+    public void informationAlert(String title, String message, String confirm) {
         runOnUiThread(() -> InformationAlert.showDialog(getSupportFragmentManager(), title, message, confirm));
     }
 
     /**
      * Method to create a new Alert displaying a message and containing a cancel button and a custom button
      *
-     * @param message - the String to be displayed
-     * @param title - the title for the Alert
-     * @param buttonCancelText - the text to set for the cancel Button
-     * @param buttonConfirmText - the text to set for the confirm Button
-     * @param buttonConfirmListener - the Listener to be performed on click of the right (confirm) Button
+     * @param title the title for the Alert
+     * @param message the String to be displayed
+     * @param buttonCancelText the text to set for the cancel Button
+     * @param buttonConfirmText the text to set for the confirm Button
+     * @param buttonConfirmListener the Listener to be performed on click of the right (confirm) Button
      */
-    public void choiceAlert(String message, String title, String buttonCancelText, String buttonConfirmText, DialogInterface.OnClickListener buttonConfirmListener) {
-        choiceAlert(message, title, buttonCancelText, (dialog, var) -> dialog.dismiss(), buttonConfirmText, buttonConfirmListener);
+    public void choiceAlert(String title, String message, String buttonCancelText, String buttonConfirmText, DialogInterface.OnClickListener buttonConfirmListener) {
+        choiceAlert(title, message, buttonCancelText, (dialog, var) -> dialog.dismiss(), buttonConfirmText, buttonConfirmListener);
     }
 
     /**
      * Method to create a new Alert displaying a message and containing two custom buttons
      *
-     * @param message - the String to be displayed
-     * @param title - the title for the Alert
-     * @param buttonLeftText - the text to set for the left Button
-     * @param buttonLeftListener - the Listener to be performed on click of the left Button
-     * @param buttonRightText- the text to set for the right Button
-     * @param buttonRightListener - the Listener to be performed on click of the right Button
+     * @param title the title for the Alert
+     * @param message the String to be displayed
+     * @param buttonLeftText the text to set for the left Button
+     * @param buttonLeftListener the Listener to be performed on click of the left Button
+     * @param buttonRightText the text to set for the right Button
+     * @param buttonRightListener the Listener to be performed on click of the right Button
      */
-    public void choiceAlert(String message, String title, String buttonLeftText, DialogInterface.OnClickListener buttonLeftListener, String buttonRightText, DialogInterface.OnClickListener buttonRightListener) {
+    public void choiceAlert(String title, String message, String buttonLeftText, DialogInterface.OnClickListener buttonLeftListener, String buttonRightText, DialogInterface.OnClickListener buttonRightListener) {
         runOnUiThread(() -> ChoiceAlert.showDialog(getSupportFragmentManager(), title, message, buttonLeftText, buttonLeftListener, buttonRightText, buttonRightListener));
     }
 
     /**
      * Method to create a new Alert displaying a message and containing three custom buttons
      *
-     * @param message - the String to be displayed
-     * @param title - the title for the Alert
-     * @param buttonLeftText - the text to set for the left Button
-     * @param buttonLeftListener - the Listener to be performed on click of the left Button
-     * @param buttonCenterText - the text to set for the center Button
-     * @param buttonCenterListener - the Listener to be performed on click of the center Button
-     * @param buttonRightText- the text to set for the right Button
-     * @param buttonRightListener - the Listener to be performed on click of the right Button
+     * @param title the title for the Alert
+     * @param message the String to be displayed
+     * @param buttonLeftText the text to set for the left Button
+     * @param buttonLeftListener the Listener to be performed on click of the left Button
+     * @param buttonCenterText the text to set for the center Button
+     * @param buttonCenterListener the Listener to be performed on click of the center Button
+     * @param buttonRightText the text to set for the right Button
+     * @param buttonRightListener the Listener to be performed on click of the right Button
      */
-    public void choiceAlert(String message, String title, String buttonLeftText, DialogInterface.OnClickListener buttonLeftListener,
+    public void choiceAlert(String title, String message, String buttonLeftText, DialogInterface.OnClickListener buttonLeftListener,
                             String buttonCenterText, DialogInterface.OnClickListener buttonCenterListener, String buttonRightText, DialogInterface.OnClickListener buttonRightListener) {
         runOnUiThread(() -> {
             //TODO

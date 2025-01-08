@@ -97,7 +97,7 @@ public class LoginUserFragment extends Fragment implements IsLoggedInListener {
                     ((TextView) getView().findViewById(R.id.tv_login_error)).setText(loginState.toString());
                     getView().findViewById(R.id.cl_login_error_box).setVisibility(View.VISIBLE);
                 }
-                ((MainActivity) getActivity()).informationAlert("Entered credentials do not match!", "Wrong credentials", "Correct");
+                ((MainActivity) getActivity()).informationAlert("Wrong credentials", "Entered credentials do not match!", "Correct");
 
             });
             return;

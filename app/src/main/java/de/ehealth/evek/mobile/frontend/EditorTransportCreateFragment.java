@@ -113,7 +113,7 @@ public class EditorTransportCreateFragment extends Fragment {
     /**
      * Method used for creating a Transport with the Information currently inserted
      *
-     * @param view - The View calling the method
+     * @param view The View calling the method
      */
     private void createTransport(View view) {
         DataHandler.instance().runOnNetworkThread(() -> {
@@ -150,15 +150,17 @@ public class EditorTransportCreateFragment extends Fragment {
             } catch (ProcessingException e) {
                 if (getActivity() == null)
                     return;
-                ((MainActivity) getActivity()).exceptionAlert(e, "Transport konnte nicht erstellt werden!");
+                ((MainActivity) getActivity()).exceptionAlert("Transport konnte nicht erstellt werden!", e);
             }
             if (getActivity() == null
                     || transport == null)
                 return;
 
             TransportDetails finalTransport = transport;
-            ((MainActivity) getActivity()).choiceAlert("Transport wurde erfolgreich mit ID " + transport.id().value() + " erstellt!\n\r\n\rSoll der Transport einem Transportunternehmen zugewiesen werden?",
-                    "Transport wurde erstellt!", "Nein",
+            ((MainActivity) getActivity()).choiceAlert(
+                    "Transport wurde erstellt!",
+                    "Transport wurde erfolgreich mit ID " + transport.id().value() + " erstellt!\n\r\n\rSoll der Transport einem Transportunternehmen zugewiesen werden?",
+                     "Nein",
                     (dialog, which) -> {
                         if (getActivity() != null) {
 

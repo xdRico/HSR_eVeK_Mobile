@@ -39,9 +39,9 @@ public class SingleChoiceRecyclerAdapter<T> extends RecyclerView.Adapter<SingleC
      * Constructor of SingleChoiceRecyclerAdapter <br>
      * Used for a RecyclerAdapter configured for Single choice lists
      *
-     * @param context - the current context
-     * @param data - List containing the choice instances
-     * @param typeClass - class type of the items in the list
+     * @param context the current context
+     * @param data List containing the choice instances
+     * @param typeClass class type of the items in the list
      */
     SingleChoiceRecyclerAdapter(Context context, List<T> data, Class<T> typeClass) {
         this.mInflater = LayoutInflater.from(context);
@@ -81,7 +81,7 @@ public class SingleChoiceRecyclerAdapter<T> extends RecyclerView.Adapter<SingleC
     /**
      * Method used for setting the active Item
      *
-     * @param item - the Item to set as active
+     * @param item the Item to set as active
      */
     public void setActiveItem (T item){
         if(!setup) {
@@ -104,7 +104,7 @@ public class SingleChoiceRecyclerAdapter<T> extends RecyclerView.Adapter<SingleC
          * Constructor of ViewHolder <br>
          * Used for storing and recycling views as they are scrolled off screen
          *
-         * @param itemView - the View to create the ViewHolder for
+         * @param itemView the View to create the ViewHolder for
          */
         ViewHolder(View itemView) {
             super(itemView);
@@ -125,9 +125,9 @@ public class SingleChoiceRecyclerAdapter<T> extends RecyclerView.Adapter<SingleC
     /**
      * Method for getting the item at the clicked position
      *
-     * @param id - the index/id of the Item
+     * @param id the index/id of the Item
      *
-     * @return T - Item of the type at the given index
+     * @return T Item of the type at the given index
      */
     T getItem(int id) {
         return mData.get(id);
@@ -136,10 +136,20 @@ public class SingleChoiceRecyclerAdapter<T> extends RecyclerView.Adapter<SingleC
     /**
      * Method to set the ItemClickListener
      *
-     * @param itemClickListener - the ItemClickListener to be set
+     * @param itemClickListener the ItemClickListener to be set
      */
     void setClickListener(ItemClickListener itemClickListener) {
         this.mClickListener = itemClickListener;
+    }
+
+    /**
+     * Method used to set the {@link CheckBox CheckBoxes} editable or uneditable.
+     *
+     * @param editable if the {@link CheckBox CheckBoxes} should be editable
+     */
+    void setEditable(boolean editable){
+        for(CheckBox box : checkBoxes)
+            box.setEnabled(editable);
     }
 
     /**
@@ -152,9 +162,9 @@ public class SingleChoiceRecyclerAdapter<T> extends RecyclerView.Adapter<SingleC
         /**
          * Method called on Item Click
          *
-         * @param obj - the clicked Object
-         * @param position - the position of the clicked Item
-         * @param <T> - the Type of the Item
+         * @param obj the clicked Object
+         * @param position the position of the clicked Item
+         * @param <T> the Type of the Item
          */
         <T> void onItemClick(T obj, int position);
     }

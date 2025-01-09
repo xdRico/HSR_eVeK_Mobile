@@ -75,17 +75,122 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
     private final ServerConnection serverConnection = new ServerConnection();
 
     private final List<IsLoggedInListener> isLoggedInListeners = new ArrayList<>();
-
+    private final List<TransportDocumentsChangedListener> transportDocumentsChangedListeners = new ArrayList<>();
+    private final List<TransportsChangedListener> transportsChangedListeners = new ArrayList<>();
     private final List<Id<TransportDocument>> transportDocumentIDs = new ArrayList<>();
     private final List<Id<TransportDetails>> transportDetailIDs = new ArrayList<>();
 
     /**
-     * Record used for passing the ConnectionCounter
+     * Record used for passing the ConnectionCounter.
      *
      * @param timesToTryConnect maximum times for trying to connect
      * @param timesTriedToConnect current count of tries
      */
     public record ConnectionCounter(int timesToTryConnect, int timesTriedToConnect) {
+    }
+
+    /**
+     * Interface used for passing changes in the {@link TransportDocument TransportDocuments} to added Listeners.
+     */
+    public interface TransportDocumentsChangedListener {
+
+        /**
+         * Method called on changes in the {@link TransportDocument TransportDocuments}.
+         */
+        void onTransportDocumentsChanged();
+    }
+
+    /**
+     * Interface used for passing changes in the {@link TransportDetails Transports} to added Listeners.
+     */
+    public interface TransportsChangedListener {
+
+        /**
+         * Method called on changes in the {@link TransportDetails Transports}.
+         */
+        void onTransportsChanged();
+    }
+
+    /**
+     * Method used for calling all {@link TransportDocumentsChangedListener TransportDocumentsChanged Listener's} onTransportDocumentsChanged method.
+     */
+    private void callOnTransportDocumentsChanged(){
+        for(TransportDocumentsChangedListener listener : transportDocumentsChangedListeners)
+            if(listener != null)
+                listener.onTransportDocumentsChanged();
+    }
+
+    /**
+     * Method used for calling all {@link TransportsChangedListener TransportsChanged Listener's} onTransportsChanged method.
+     */
+    private void callOnTransportsChanged(){
+        for(TransportsChangedListener listener : transportsChangedListeners){
+            if(listener != null)
+                listener.onTransportsChanged();
+        }
+    }
+
+    /**
+     * Method for adding {@link IsInitializedListener IsInitializedListeners}
+     *
+     * @param listener {@link IsInitializedListener} to be added
+     */
+    public void addIsInitializedListener(IsInitializedListener listener){
+        serverConnection.addIsInitializedListener(listener);
+    }
+
+    /**
+     * Method for adding {@link IsLoggedInListener IsLoggedInListeners}
+     *
+     * @param listener {@link IsLoggedInListener} to be added
+     */
+    public void addIsLoggedInListener(IsLoggedInListener listener){
+        if(!isLoggedInListeners.contains(listener))
+            isLoggedInListeners.add(listener);
+    }
+
+    /**
+     * Method for adding {@link TransportDocumentsChangedListener TransportDocumentsChangedListeners}
+     *
+     * @param listener {@link TransportDocumentsChangedListener} to be added
+     */
+    public void addTransportDocumentsChangedListener(TransportDocumentsChangedListener listener){
+        if(!transportDocumentsChangedListeners.contains(listener))
+            transportDocumentsChangedListeners.add(listener);
+    }
+
+    /**
+     * Method for adding {@link TransportsChangedListener TransportsChangedListeners}
+     *
+     * @param listener {@link TransportsChangedListener} to be added
+     */
+    public void addTransportsChangedListener(TransportsChangedListener listener){
+        if(!transportsChangedListeners.contains(listener))
+            transportsChangedListeners.add(listener);
+    }
+
+    /**
+     * Method for removing {@link IsLoggedInListener IsLoggedInListeners}
+     *
+     * @param listener {@link IsLoggedInListener} to be removed
+     */
+    public void removeIsLoggedInListener(IsLoggedInListener listener){
+        isLoggedInListeners.remove(listener);
+    }
+
+    @Override
+    public void onLoginStateChanged(Throwable isLoggedIn) {
+        if (!(isLoggedIn instanceof UserLoggedInThrowable))
+            return;
+        loginUser = ((UserLoggedInThrowable) isLoggedIn).getUser();
+    }
+
+    @Override
+    public void onInitializedStateChanged(boolean isInitialized) {
+        if(!isInitialized)
+            return;
+        sender = serverConnection.getComClientSender();
+        receiver = serverConnection.getComClientReceiver();
     }
 
     /**
@@ -165,49 +270,6 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         this.encryptedSharedPreferences = encryptedSharedPreferences;
         if (validStoring)
             Log.sendMessage("UserStorage successfully set up!");
-    }
-
-    @Override
-    public void onInitializedStateChanged(boolean isInitialized) {
-        if(!isInitialized)
-            return;
-        sender = serverConnection.getComClientSender();
-        receiver = serverConnection.getComClientReceiver();
-    }
-
-    /**
-     * Method for adding {@link IsInitializedListener IsInitializedListeners}
-     *
-     * @param listener {@link IsInitializedListener} to be added
-     */
-    public void addIsInitializedListener(IsInitializedListener listener){
-        serverConnection.addIsInitializedListener(listener);
-    }
-
-    /**
-     * Method for adding {@link IsLoggedInListener IsLoggedInListeners}
-     *
-     * @param listener {@link IsLoggedInListener} to be added
-     */
-    public void addIsLoggedInListener(IsLoggedInListener listener){
-        if(!isLoggedInListeners.contains(listener))
-            isLoggedInListeners.add(listener);
-    }
-
-    /**
-     * Method for removing {@link IsLoggedInListener IsLoggedInListeners}
-     *
-     * @param listener {@link IsLoggedInListener} to be removed
-     */
-    public void removeIsLoggedInListener(IsLoggedInListener listener){
-        isLoggedInListeners.remove(listener);
-    }
-
-    @Override
-    public void onLoginStateChanged(Throwable isLoggedIn) {
-        if (!(isLoggedIn instanceof UserLoggedInThrowable))
-            return;
-        loginUser = ((UserLoggedInThrowable) isLoggedIn).getUser();
     }
 
     /**
@@ -435,6 +497,8 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         }
         transportDocumentIDs.add(transportDocument.id());
 
+        callOnTransportDocumentsChanged();
+
         if(!validStoring)
             return;
 
@@ -547,6 +611,8 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
             }
         }
         transportDetailIDs.add(transportDetails.id());
+
+        callOnTransportsChanged();
 
         if(!validStoring)
             return;

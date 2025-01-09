@@ -33,7 +33,8 @@ import de.ehealth.evek.mobile.network.DataHandler;
  * @implements {@link TransportDocumentRecyclerAdapter.ItemClickListener}
  * @implements {@link TransportRecyclerAdapter.ItemClickListener}
  */
-public class MainPageDoctorFragment extends Fragment implements TransportDocumentRecyclerAdapter.ItemClickListener, TransportRecyclerAdapter.ItemClickListener {
+public class MainPageDoctorFragment extends Fragment implements TransportDocumentRecyclerAdapter.ItemClickListener,
+        TransportRecyclerAdapter.ItemClickListener, DataHandler.TransportDocumentsChangedListener, DataHandler.TransportsChangedListener {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -44,45 +45,9 @@ public class MainPageDoctorFragment extends Fragment implements TransportDocumen
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        DataHandler handler = DataHandler.instance();
         View view = inflater.inflate(R.layout.fragment_main_page_doctor, container, false);
 
-        RecyclerView recyclerViewDocument = view.findViewById(R.id.rv_transport_documents);
-        recyclerViewDocument.setLayoutManager(new LinearLayoutManager(getActivity()));
-
-        RecyclerView recyclerViewTransport = view.findViewById(R.id.rv_transports);
-        recyclerViewTransport.setLayoutManager(new LinearLayoutManager(getActivity()));
-
-        handler.runOnNetworkThread(() -> {
-
-            List<TransportDocument> docs = handler.getTransportDocuments();
-            TransportDocumentRecyclerAdapter transportDocumentAdapter = new TransportDocumentRecyclerAdapter(getActivity(), docs);
-            transportDocumentAdapter.setClickListener(this);
-
-            List<TransportRecyclerAdapter.TransportDetailsWithServiceProvider> detailsWithSP = new ArrayList<>();
-
-                for(TransportDetails detail : handler.getTransportDetails()){
-                    try{
-                        Id<ServiceProvider> serviceProviderId = handler.getTransportDocumentById(detail.transportDocument().id()).healthcareServiceProvider().id();
-                        detailsWithSP.add(new TransportRecyclerAdapter.TransportDetailsWithServiceProvider(detail, serviceProviderId));
-                    }catch(IllegalProcessException e){
-                        Log.sendMessage("TransportDocument not found!");
-                        detailsWithSP.add(new TransportRecyclerAdapter.TransportDetailsWithServiceProvider(detail, new Id<>("No valid service provider!")));
-                    }
-                }
-
-
-            TransportRecyclerAdapter transportAdapter = new TransportRecyclerAdapter(getActivity(), detailsWithSP);
-            transportAdapter.setClickListener(this);
-
-            if(getActivity() == null)
-                return;
-            getActivity().runOnUiThread(() -> {
-
-                recyclerViewDocument.setAdapter(transportDocumentAdapter);
-                recyclerViewTransport.setAdapter(transportAdapter);
-            });
-        });
+        updateRecyclerAdapters(view);
 
         view.findViewById(R.id.btn_transport_doc_create).setOnClickListener((l) -> {
             NavController navController = NavHostFragment.findNavController(MainPageDoctorFragment.this);
@@ -100,6 +65,47 @@ public class MainPageDoctorFragment extends Fragment implements TransportDocumen
             getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_editorTransportCreateFragment));
         });
         return view;
+    }
+
+    private void updateRecyclerAdapters(View view){
+
+        DataHandler handler = DataHandler.instance();
+
+        RecyclerView recyclerViewDocument = view.findViewById(R.id.rv_transport_documents);
+        recyclerViewDocument.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        RecyclerView recyclerViewTransport = view.findViewById(R.id.rv_transports);
+        recyclerViewTransport.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        handler.runOnNetworkThread(() -> {
+
+            List<TransportDocument> docs = handler.getTransportDocuments();
+            TransportDocumentRecyclerAdapter transportDocumentAdapter = new TransportDocumentRecyclerAdapter(getActivity(), docs);
+            transportDocumentAdapter.setClickListener(this);
+
+            List<TransportRecyclerAdapter.TransportDetailsWithServiceProvider> detailsWithSP = new ArrayList<>();
+
+            for(TransportDetails detail : handler.getTransportDetails()){
+                try{
+                    Id<ServiceProvider> serviceProviderId = handler.getTransportDocumentById(detail.transportDocument().id()).healthcareServiceProvider().id();
+                    detailsWithSP.add(new TransportRecyclerAdapter.TransportDetailsWithServiceProvider(detail, serviceProviderId));
+                }catch(IllegalProcessException e){
+                    Log.sendMessage("TransportDocument not found!");
+                    detailsWithSP.add(new TransportRecyclerAdapter.TransportDetailsWithServiceProvider(detail, new Id<>("No valid service provider!")));
+                }
+            }
+
+            TransportRecyclerAdapter transportAdapter = new TransportRecyclerAdapter(getActivity(), detailsWithSP);
+            transportAdapter.setClickListener(this);
+
+            if(getActivity() == null)
+                return;
+            getActivity().runOnUiThread(() -> {
+
+                recyclerViewDocument.setAdapter(transportDocumentAdapter);
+                recyclerViewTransport.setAdapter(transportAdapter);
+            });
+        });
     }
 
     @Override
@@ -126,8 +132,6 @@ public class MainPageDoctorFragment extends Fragment implements TransportDocumen
                     dialog.dismiss();
 
                 });
-
-
     }
 
     @Override
@@ -148,5 +152,17 @@ public class MainPageDoctorFragment extends Fragment implements TransportDocumen
             else
                 ((MainActivity) getActivity()).informationAlert(getString(R.string.title_popup_transport_already_assigned), getString(R.string.content_popup_transport_already_assigned));
         });
+    }
+
+    @Override
+    public void onTransportDocumentsChanged() {
+        if(getView() != null)
+            updateRecyclerAdapters(getView());
+    }
+
+    @Override
+    public void onTransportsChanged() {
+        if(getView() != null)
+            updateRecyclerAdapters(getView());
     }
 }

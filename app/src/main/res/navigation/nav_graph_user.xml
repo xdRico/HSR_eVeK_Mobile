@@ -8,5 +8,14 @@
     <fragment
         android:id="@+id/mainPageUserFragment"
         android:name="de.ehealth.evek.mobile.frontend.MainPageUserFragment"
-        tools:layout="@layout/fragment_main_page_user" />
+        tools:layout="@layout/fragment_main_page_user" >
+        <action
+            android:id="@+id/action_mainPageUserFragment_to_editorTransportUpdateFragment"
+            app:destination="@id/editorTransportUpdateFragment2" />
+    </fragment>
+    <fragment
+        android:id="@+id/editorTransportUpdateFragment2"
+        android:name="de.ehealth.evek.mobile.frontend.EditorTransportUpdateFragment"
+        android:label="fragment_editor_transport_update"
+        tools:layout="@layout/fragment_editor_transport_update" />
 </navigation>

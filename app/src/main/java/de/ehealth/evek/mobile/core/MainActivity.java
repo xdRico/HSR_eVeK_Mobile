@@ -253,7 +253,8 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 if(navController.getCurrentDestination().getId() == R.id.mainPageDoctorFragment)
                     runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_editorTransportUpdateFragment));
-
+                else if(navController.getCurrentDestination().getId() == R.id.mainPageUserFragment)
+                    runOnUiThread(() -> navController.navigate(R.id.action_mainPageUserFragment_to_editorTransportUpdateFragment));
             }catch(IllegalProcessException e){
                 Log.sendException(e);
                 exceptionAlert("Error assigning Transport Provider!", e);

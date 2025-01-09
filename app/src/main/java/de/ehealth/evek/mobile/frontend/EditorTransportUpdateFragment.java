@@ -123,6 +123,9 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
                     if(transport.patientCondition().isPresent())
                         patientConditionAdapter.setActiveItem(transport.patientCondition().get());
 
+                    if(transport.paymentExemption().isPresent())
+                        ((CheckBox) view.findViewById(R.id.cb_payment_exemption)).setChecked(transport.paymentExemption().get());
+
                     if(transport.tourNumber().isPresent()
                             && transport.direction().isPresent()
                             && startAddress.isPresent()

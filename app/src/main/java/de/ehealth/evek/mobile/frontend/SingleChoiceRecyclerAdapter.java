@@ -1,6 +1,7 @@
 package de.ehealth.evek.mobile.frontend;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -21,7 +22,7 @@ import de.ehealth.evek.mobile.network.DataHandler;
 /**
  * Class belonging to the SingleChoice Recycler Adapter
  *
- * @extends RecyclerView.Adapter<SingleChoiceRecyclerAdapter.ViewHolder>
+ * @extends {@link RecyclerView.Adapter<SingleChoiceRecyclerAdapter.ViewHolder>}
  *
  * @noinspection rawtypes
  */
@@ -36,12 +37,12 @@ public class SingleChoiceRecyclerAdapter<T> extends RecyclerView.Adapter<SingleC
     private ItemClickListener mClickListener;
 
     /**
-     * Constructor of SingleChoiceRecyclerAdapter <br>
+     * Constructor of {@link SingleChoiceRecyclerAdapter} <br>
      * Used for a RecyclerAdapter configured for Single choice lists
      *
-     * @param context the current context
-     * @param data List containing the choice instances
-     * @param typeClass class type of the items in the list
+     * @param context the current {@link Context}
+     * @param data {@link List} containing the choice instances
+     * @param typeClass {@link Class} type of the items in the {@link List}
      */
     SingleChoiceRecyclerAdapter(Context context, List<T> data, Class<T> typeClass) {
         this.mInflater = LayoutInflater.from(context);
@@ -95,16 +96,16 @@ public class SingleChoiceRecyclerAdapter<T> extends RecyclerView.Adapter<SingleC
     }
 
     /**
-     * Class used for storing and recycling views as they are scrolled off screen
+     * Class used for storing and recycling {@link View Views} as they are scrolled off screen
      */
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         CheckBox checkBox;
 
         /**
-         * Constructor of ViewHolder <br>
-         * Used for storing and recycling views as they are scrolled off screen
+         * Constructor of {@link ViewHolder} <br>
+         * Class used for storing and recycling {@link View Views} as they are scrolled off screen
          *
-         * @param itemView the View to create the ViewHolder for
+         * @param itemView the {@link View} to create the {@link ViewHolder} for
          */
         ViewHolder(View itemView) {
             super(itemView);
@@ -127,16 +128,16 @@ public class SingleChoiceRecyclerAdapter<T> extends RecyclerView.Adapter<SingleC
      *
      * @param id the index/id of the Item
      *
-     * @return T Item of the type at the given index
+     * @return {@link T} - item of the {@link T type} at the given index
      */
     T getItem(int id) {
         return mData.get(id);
     }
 
     /**
-     * Method to set the ItemClickListener
+     * Method to set the {@link ItemClickListener}
      *
-     * @param itemClickListener the ItemClickListener to be set
+     * @param itemClickListener the {@link ItemClickListener} to be set
      */
     void setClickListener(ItemClickListener itemClickListener) {
         this.mClickListener = itemClickListener;
@@ -153,18 +154,26 @@ public class SingleChoiceRecyclerAdapter<T> extends RecyclerView.Adapter<SingleC
     }
 
     /**
+     * Method used to set the {@link CheckBox CheckBoxes} valid or invalid.
+     *
+     * @param valid if the {@link CheckBox CheckBoxes} are valid
+     */
+    void setValid(boolean valid){
+        for(CheckBox box : checkBoxes)
+            box.setTextColor(valid ? Color.argb(255, 0, 0, 0) : Color.argb(255, 255, 100, 100));
+    }
+
+    /**
      * Interface used as Listener for performing click events
      */
     public interface ItemClickListener {
-        //void onItemClick(View view, int position);
-        //<T> void clickedItem(T item);
 
         /**
          * Method called on Item Click
          *
-         * @param obj the clicked Object
+         * @param obj the clicked {@link T Object}
          * @param position the position of the clicked Item
-         * @param <T> the Type of the Item
+         * @param <T> the {@link T Type} of the Item
          */
         <T> void onItemClick(T obj, int position);
     }

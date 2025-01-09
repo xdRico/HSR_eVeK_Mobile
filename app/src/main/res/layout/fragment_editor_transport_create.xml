@@ -14,13 +14,13 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
+            android:paddingTop="30dp"
             android:paddingBottom="150dp">
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraint_patient_data"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="30dp"
                 android:paddingStart="30dp"
                 android:paddingEnd="30dp">
 
@@ -28,7 +28,7 @@
                     android:id="@+id/tv_transport_data"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/content_fragment_editor_transport_tv_transport_data"
+                    android:text="@string/content_fragment_editor_transport_create_tv_transport_data"
                     android:textSize="20sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -39,7 +39,7 @@
                     android:id="@+id/et_transport_doc_id"
                     android:layout_width="match_parent"
                     android:layout_height="50dp"
-                    android:hint="@string/hint_fragment_editor_transport_et_transport_doc_id"
+                    android:hint="@string/hint_fragment_editor_transport_create_et_transport_doc_id"
                     android:importantForAutofill="no"
                     android:inputType="text|textUri"
                     android:maxLength="36"
@@ -53,7 +53,7 @@
                     android:layout_width="140dp"
                     android:layout_height="50dp"
                     android:ems="10"
-                    android:hint="@string/hint_fragment_editor_transport_et_transport_date"
+                    android:hint="@string/hint_fragment_editor_transport_create_et_transport_date"
                     android:importantForAutofill="no"
                     android:inputType="date"
                     android:textAlignment="center"
@@ -73,7 +73,7 @@
                     android:id="@+id/btn_save_transport"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/content_fragment_editor_transport_btn_save_transport"
+                    android:text="@string/content_fragment_editor_transport_create_btn_save_transport"
                     app:layout_constraintEnd_toEndOf="@+id/constraint_edit"
                     app:layout_constraintStart_toStartOf="@+id/constraint_edit"
                     app:layout_constraintTop_toTopOf="@+id/constraint_edit" />

@@ -28,10 +28,10 @@ import de.ehealth.evek.mobile.network.DataHandler;
 /**
  * Class belonging to the Doctor MainPage Fragment
  *
- * @extends Fragment
+ * @extends {@link Fragment}
  *
- * @implements TransportDocumentRecyclerAdapter.ItemClickListener
- * @implements TransportRecyclerAdapter.ItemClickListener
+ * @implements {@link TransportDocumentRecyclerAdapter.ItemClickListener}
+ * @implements {@link TransportRecyclerAdapter.ItemClickListener}
  */
 public class MainPageDoctorFragment extends Fragment implements TransportDocumentRecyclerAdapter.ItemClickListener, TransportRecyclerAdapter.ItemClickListener {
 
@@ -63,7 +63,7 @@ public class MainPageDoctorFragment extends Fragment implements TransportDocumen
 
                 for(TransportDetails detail : handler.getTransportDetails()){
                     try{
-                        Id<ServiceProvider> serviceProviderId = handler.getTransportDocumentByID(detail.transportDocument().id()).healthcareServiceProvider().id();
+                        Id<ServiceProvider> serviceProviderId = handler.getTransportDocumentById(detail.transportDocument().id()).healthcareServiceProvider().id();
                         detailsWithSP.add(new TransportRecyclerAdapter.TransportDetailsWithServiceProvider(detail, serviceProviderId));
                     }catch(IllegalProcessException e){
                         Log.sendMessage("TransportDocument not found!");

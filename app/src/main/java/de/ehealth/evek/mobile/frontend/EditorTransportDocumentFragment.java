@@ -40,9 +40,9 @@ import de.ehealth.evek.mobile.network.DataHandler;
 /**
  * Class belonging to the EditorTransportDocument Fragment
  *
- * @extends Fragment
+ * @extends {@link Fragment}
  *
- * @implements SingleChoiceRecyclerAdapter.ItemClickListener
+ * @implements {@link SingleChoiceRecyclerAdapter.ItemClickListener}
  */
 public class EditorTransportDocumentFragment extends Fragment implements SingleChoiceRecyclerAdapter.ItemClickListener {
     private SingleChoiceRecyclerAdapter<TransportReason> transportReasonAdapter;
@@ -137,7 +137,7 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
         DataHandler handler = DataHandler.instance();
         handler.runOnNetworkThread(() -> {
             try{
-                TransportDocument document = handler.getTransportDocumentByID(transportDocument.value());
+                TransportDocument document = handler.getTransportDocumentById(transportDocument.value());
                 if(document == null)
                     throw new IllegalProcessException("Transport with ID " + transportDocument.value() + " not found!");
                 if(getActivity() == null)
@@ -149,7 +149,7 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
                     ((EditText) view.findViewById(R.id.et_transport_date)).setText(document.startDate().toString());
                     ((EditText) view.findViewById(R.id.et_service_provider)).setText(document.healthcareServiceProvider().id().value());
                     if(document.weeklyFrequency().isPresent() && document.endDate().isPresent()) {
-                        ((EditText) view.findViewById(R.id.et_end_date)).setText(document.endDate().toString());
+                        ((EditText) view.findViewById(R.id.et_end_date)).setText(document.endDate().get().toString());
                         ((EditText) view.findViewById(R.id.et_weekly_frequency)).setText(String.format(Locale.GERMANY, "%d", document.weeklyFrequency().get()));
                     }
                     transportationTypeAdapter.setActiveItem(document.transportationType());
@@ -190,7 +190,7 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
     /**
      * Method used for creating a TransportDocument
      *
-     * @param view The View calling the method
+     * @param view the {@link View} calling the method
      */
     private void createTransportDoc(View view) {
         DataHandler.instance().runOnNetworkThread(() -> {
@@ -230,6 +230,7 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
                 Log.sendException(e);
                 valid = false;
                 getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_transport_date)).setHintTextColor(Color.argb(255, 255, 100, 100)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_transport_date)).setTextColor(Color.argb(255, 255, 100, 100)));
             }
 
             if(!((EditText) view.findViewById(R.id.et_end_date)).getText().toString().isBlank()
@@ -239,6 +240,7 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
                 }catch(NumberFormatException e){
                     Log.sendException(e);
                     getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_weekly_frequency)).setTextColor(Color.argb(255, 255, 100, 100)));
+
                     valid = false;
                 }
                 try{
@@ -253,7 +255,9 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
                     || !((EditText) view.findViewById(R.id.et_weekly_frequency)).getText().toString().isBlank()){
 
                 getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_end_date)).setHintTextColor(Color.argb(255, 255, 100, 100)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_end_date)).setTextColor(Color.argb(255, 255, 100, 100)));
                 getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_weekly_frequency)).setHintTextColor(Color.argb(255, 255, 100, 100)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_weekly_frequency)).setTextColor(Color.argb(255, 255, 100, 100)));
 
                 valid = false;
             }
@@ -265,7 +269,7 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
             TransportDocument transportDocument = null;
             try {
                 if(this.transportDocument != null)
-                    transportDocument = handler.getTransportDocumentByID(this.transportDocument);
+                    transportDocument = handler.getTransportDocumentById(this.transportDocument);
 
                 if(transportDocument != null) {
                     if (patient.isPresent() && insuranceData.isPresent()

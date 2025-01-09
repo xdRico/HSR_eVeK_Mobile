@@ -55,18 +55,43 @@
     <string name="hint_fragment_editor_transport_doc_tv_service_provider">Behandlungsstätte</string>
     <string name="hint_fragment_editor_transport_doc_et_info">Weitere Informationen</string>
 
-    <!-- Strings for TransportEditor -->
-    <string name="content_fragment_editor_transport_tv_transport_data">Transportdaten</string>
-    <string name="hint_fragment_editor_transport_et_transport_doc_id">Transportschein ID</string>
-    <string name="hint_fragment_editor_transport_et_transport_date">Transportdatum</string>
-    <string name="content_fragment_editor_transport_btn_save_transport">Speichern</string>
+    <!-- Strings for TransportCreateEditor -->
+    <string name="content_fragment_editor_transport_create_tv_transport_data">Transportdaten</string>
+    <string name="hint_fragment_editor_transport_create_et_transport_doc_id">Transportschein ID</string>
+    <string name="hint_fragment_editor_transport_create_et_transport_date">Transportdatum</string>
+    <string name="content_fragment_editor_transport_create_btn_save_transport">Speichern</string>
 
+    <!-- Strings for TransportUpdateEditor -->
+    <string name="content_fragment_editor_transport_update_tv_transport_data">Transportdaten</string>
+    <string name="content_fragment_editor_transport_update_tb_direction">Fahrtrichtung</string>
+    <string name="content_on_fragment_editor_transport_update_tb_direction">Rückfahrt</string>
+    <string name="content_off_fragment_editor_transport_update_tb_direction">Hinfahrt</string>
+    <string name="content_fragment_editor_transport_update_tv_address_start">Startadresse</string>
+    <string name="content_fragment_editor_transport_update_tv_address_end">Zieladresse</string>
+    <string name="content_off_fragment_editor_transport_update_tv_patient_condition">Patientenzustand</string>
+    <string name="content_off_fragment_editor_transport_update_tv_payment_exemption">Zuzahlungsbefreiung</string>
+    <string name="content_off_fragment_editor_transport_update_cb_payment_exemption">Gültiger Zuzahlungsbefreiungsausweis für den Zeitraum der Krankenbeförderung wurde vorgelegt</string>
+
+
+    <string name="hint_fragment_editor_transport_update_et_tour_number">Auftragsnummer</string>
+    <string name="hint_fragment_editor_transport_update_et_address_street">Straße</string>
+    <string name="hint_fragment_editor_transport_update_et_address_house_number">Nr.</string>
+    <string name="hint_fragment_editor_transport_update_et_address_zip_code">PLZ</string>
+    <string name="hint_fragment_editor_transport_update_et_address_city">Stadt</string>
+
+
+
+
+
+    <!-- Strings for TransportAssign -->
     <string name="content_fragment_assign_transport_btn_self_assign">Selbst zuweisen</string>
     <string name="content_fragment_assign_transport_tv_assign_transport">Transport zuweisen</string>
     <string name="desc_fragment_assign_transport_iv_qr_code">Zeigt den zu scannenden QR-Code</string>
 
+    <!-- Strings for RecyclerView for TransportDocuments -->
     <string name="content_recyclerview_transport_document_row_tv_service_provider_info">Behandlungsstätte:</string>
 
+    <!-- Strings for RecyclerView for Transports -->
     <string name="content_recyclerview_transport_row_tv_service_provider_info">Behandlungsstätte:</string>
     <string name="content_recyclerview_transport_row_tv_date_info">Datum:</string>
     <string name="content_recyclerview_transport_row_tv_transport_provider">Transportdienstleister:</string>

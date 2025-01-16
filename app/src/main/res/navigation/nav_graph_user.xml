@@ -16,6 +16,5 @@
     <fragment
         android:id="@+id/editorTransportUpdateFragment2"
         android:name="de.ehealth.evek.mobile.frontend.EditorTransportUpdateFragment"
-        android:label="fragment_editor_transport_update"
         tools:layout="@layout/fragment_editor_transport_update" />
 </navigation>

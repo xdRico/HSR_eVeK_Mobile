@@ -7,6 +7,7 @@ import android.os.Looper;
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKey;
 
+import java.net.SocketException;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -300,9 +301,9 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      *
      * @return {@link TransportDocument} - the {@link TransportDocument} with the given {@link Id}
      *
-     * @throws IllegalProcessException thrown, when the {@link TransportDocument} could not be found
+     * @throws ProcessingException thrown, when the {@link TransportDocument} could not be found
      */
-    public TransportDocument getTransportDocumentById(String transportDocID) throws IllegalProcessException{
+    public TransportDocument getTransportDocumentById(String transportDocID) throws ProcessingException{
         return getTransportDocumentById(new Id<>(transportDocID));
     }
 
@@ -313,15 +314,15 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      *
      * @return {@link TransportDocument} - the {@link TransportDocument} with the given {@link Id}
      *
-     * @throws IllegalProcessException thrown, when the {@link TransportDocument} could not be found
+     * @throws ProcessingException thrown, when the {@link TransportDocument} could not be found
      */
-    public TransportDocument getTransportDocumentById(Id<TransportDocument> transportDocID) throws IllegalProcessException{
+    public TransportDocument getTransportDocumentById(Id<TransportDocument> transportDocID) throws ProcessingException{
         try {
             sender.sendTransportDocument(new TransportDocument.Get(transportDocID));
             return receiver.receiveTransportDocument();
         }catch(Exception e){
             Log.sendException(e);
-            throw new IllegalProcessException(e);
+            throw new ProcessingException(e);
         }
     }
 
@@ -474,14 +475,16 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      * @return {@link List<TransportDocument>} - the {@link List} of current {@link TransportDocument TransportDocuments}
      */
     public List<TransportDocument> getTransportDocuments(){
-        List<TransportDocument> transportDocuments = new ArrayList<>();
-        for(Id<TransportDocument> id : transportDocumentIDs)
-            try{
-                transportDocuments.add(getTransportDocumentById(id.value()));
-            }catch(IllegalProcessException e){
-                Log.sendMessage(String.format("Could not read TransportDocument with ID %s!", id.value()));
-            }
-        return transportDocuments;
+        List<TransportDocument> docs = new ArrayList<>();
+        try{
+            if(transportDocumentIDs.isEmpty())
+                return docs;
+            sender.sendTransportDocument(new TransportDocument.GetListByIDList(transportDocumentIDs));
+            docs = (List<TransportDocument>) receiver.receiveList();
+        } catch(Exception e){
+            Log.sendMessage("Could not read TransportDocuments!");
+        }
+        return docs;
     }
 
     /**
@@ -536,9 +539,9 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      *
      * @return {@link TransportDetails TransportDetails} - the {@link TransportDetails Transport} with the given {@link Id}
      *
-     * @throws IllegalProcessException thrown, when the {@link TransportDetails Transport} could not be found
+     * @throws ProcessingException thrown, when the {@link TransportDetails Transport} could not be found
      */
-    public TransportDetails getTransportDetailsById(String transportID) throws IllegalProcessException{
+    public TransportDetails getTransportDetailsById(String transportID) throws ProcessingException{
         return getTransportDetailsById(new Id<>(transportID));
     }
 
@@ -549,15 +552,15 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      *
      * @return {@link TransportDetails TransportDetails} - the {@link TransportDetails Transport} with the given {@link Id}
      *
-     * @throws IllegalProcessException thrown, when the {@link TransportDetails Transport} could not be found
+     * @throws ProcessingException thrown, when the {@link TransportDetails Transport} could not be found
      */
-    public TransportDetails getTransportDetailsById(Id<TransportDetails> transportID) throws IllegalProcessException{
+    public TransportDetails getTransportDetailsById(Id<TransportDetails> transportID) throws ProcessingException{
         try {
             sender.sendTransportDetails(new TransportDetails.Get(transportID));
             return receiver.receiveTransportDetails();
         }catch(Exception e){
             Log.sendException(e);
-            throw new IllegalProcessException(e);
+            throw new ProcessingException(e);
         }
     }
 
@@ -589,14 +592,16 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      * @return {@link List<TransportDetails>} - the {@link List} of current {@link TransportDetails Transports}
      */
     public List<TransportDetails> getTransportDetails(){
-        List<TransportDetails> transportDetails = new ArrayList<>();
-        for(Id<TransportDetails> id : transportDetailIDs)
-            try{
-                transportDetails.add(getTransportDetailsById(id.value()));
-            }catch(IllegalProcessException e){
-                Log.sendMessage(String.format("Could not read TransportDocument with ID %s!", id.value()));
-            }
-        return transportDetails;
+        List<TransportDetails> det = new ArrayList<>();
+        try{
+            if(transportDocumentIDs.isEmpty())
+                return det;
+            sender.sendTransportDetails(new TransportDetails.GetListByIDList(transportDetailIDs));
+            det = (List<TransportDetails>) receiver.receiveList();
+        } catch(Exception e){
+            Log.sendMessage("Could not read TransportDetails!");
+        }
+        return det;
     }
 
     /**
@@ -651,9 +656,9 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      *
      * @return {@link TransportDetails TransportDetails} - the {@link TransportDetails Transport} that were assigned
      *
-     * @throws IllegalProcessException thrown, when The String format does not match or the {@link TransportDetails Transport} could not be assigned
+     * @throws ProcessingException thrown, when The String format does not match or the {@link TransportDetails Transport} could not be assigned
      */
-    public TransportDetails tryAssignTransport(String input) throws IllegalProcessException {
+    public TransportDetails tryAssignTransport(String input) throws ProcessingException {
         if(!input.matches("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}"))
             throw new IllegalArgumentException("String format does not match!");
         try {
@@ -662,8 +667,24 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
             addTransport(assigned);
             return assigned;
         } catch (Exception e) {
+            /*if(e instanceof SocketException){
+                try{
+                    serverConnection.resetAndReconnect(loginUser);
+
+                    sender.sendTransportDetails(new TransportDetails.AssignTransportProvider(new Id<>(input), loginUser.user().serviceProvider()));
+                    TransportDetails assigned = receiver.receiveTransportDetails();
+                    addTransport(assigned);
+                    return assigned;
+                }catch(Exception ex){
+                    Log.sendException(ex);
+                    throw new ProcessingException(ex);
+                }
+            }*/
+            if(e instanceof SocketException){
+                //TODO Reconnect on every method!
+            }
             Log.sendException(e);
-            throw new IllegalProcessException(e);
+            throw new ProcessingException(e);
         }
     }
 
@@ -680,10 +701,10 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      *
      * @return {@link TransportDetails} - the {@link TransportDetails Transport} with the updated properties
      *
-     * @throws IllegalProcessException thrown, when the {@link TransportDetails Transport} could not be assigned
+     * @throws ProcessingException thrown, when the {@link TransportDetails Transport} could not be assigned
      */
     public TransportDetails updateTransport(Id<TransportDetails> transportID, COptional<String> tourNumber, Reference<Address> startAddress, Reference<Address> endAddress,
-                                            Direction direction, PatientCondition patientCondition, boolean paymentExemption) throws IllegalProcessException {
+                                            Direction direction, PatientCondition patientCondition, boolean paymentExemption) throws ProcessingException {
         try {
             sender.sendTransportDetails(new TransportDetails.Update(transportID, COptional.of(startAddress), COptional.of(endAddress),
                     COptional.of(direction), COptional.of(patientCondition), tourNumber, COptional.of(paymentExemption)));
@@ -692,7 +713,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
             return updated;
         }catch(Exception e){
             Log.sendException(e);
-            throw new IllegalProcessException(e);
+            throw new ProcessingException(e);
         }
     }
 
@@ -703,9 +724,9 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      *
      * @return {@link Address} - the {@link Address} with the given {@link Id}
      *
-     * @throws IllegalProcessException thrown, when the {@link Address} could not be found
+     * @throws ProcessingException thrown, when the {@link Address} could not be found
      */
-    public Address getAddressById(String addressId) throws IllegalProcessException {
+    public Address getAddressById(String addressId) throws ProcessingException {
         return getAddressById(new Id<>(addressId));
     }
 
@@ -716,15 +737,15 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      *
      * @return {@link Address} - the {@link Address} with the given {@link Id}
      *
-     * @throws IllegalProcessException thrown, when the {@link Address} could not be found
+     * @throws ProcessingException thrown, when the {@link Address} could not be found
      */
-    public Address getAddressById(Id<Address> addressId) throws IllegalProcessException {
+    public Address getAddressById(Id<Address> addressId) throws ProcessingException {
         try {
             sender.sendAddress(new Address.Get(addressId));
             return receiver.receiveAddress();
         }catch(Exception e){
             Log.sendException(e);
-            throw new IllegalProcessException(e);
+            throw new ProcessingException(e);
         }
     }
 
@@ -806,6 +827,30 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
                     };
                 }
             } catch(Exception e){
+                /*if(e instanceof SocketException){
+                    try{
+                        serverConnection.resetAndReconnect(loginUser);
+
+                        this.sender.loginUser(username, password);
+                        User loginUser = this.receiver.receiveUser();
+                        if(loginUser != null) {
+                            t = switch (loginUser.role()) {
+                                case HealthcareAdmin, HealthcareUser, InsuranceAdmin,
+                                     InsuranceUser, TransportAdmin, TransportInvoice ->
+                                        new NoValidUserRoleException(loginUser.role(), "Mobile (App) Login");
+                                case HealthcareDoctor, TransportDoctor, TransportUser, SuperUser -> {
+                                    this.loginUser = new LoginUser(loginUser, password);
+                                    yield new UserLoggedInThrowable(loginUser);
+                                }
+                            };
+                        }
+                    }catch(Exception ex){
+                        t = e;
+                    }
+                }else*/
+                if(e instanceof SocketException){
+                    //TODO Reconnect on every method!
+                }
                 t = e;
             }
             SharedPreferences.Editor editor = encryptedSharedPreferences.edit();
@@ -835,9 +880,9 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
                         editor.apply();
                         Log.sendMessage("User " + username + " successfully saved for auto login!");
                     }else{
+                        storeNextUser = false;
                         Log.sendMessage("User " + username + " could not be saved for auto login!");
                     }
-                    storeNextUser = false;
                 }
             }
             changeLoginState(t);
@@ -857,6 +902,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         editor.remove("eVeK-password");
         editor.apply();
         clearTransportCache();
+        storeNextUser = false;
         try{
             serverConnection.resetConnection();
         }catch(IllegalProcessException e){

@@ -17,8 +17,10 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ToggleButton;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
 
 import de.ehealth.evek.api.entity.Address;
 import de.ehealth.evek.api.entity.TransportDetails;
@@ -96,7 +98,7 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
 
                 getActivity().runOnUiThread(() -> {
 
-                    ((EditText) view.findViewById(R.id.et_transport_date)).setText(transport.transportDate().toString());
+                    ((EditText) view.findViewById(R.id.et_transport_date)).setText(new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(transport.transportDate().getTime()));
 
                     if(transport.tourNumber().isPresent())
                         ((EditText) view.findViewById(R.id.et_tour_number)).setText(transport.tourNumber().get());
@@ -133,7 +135,7 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
                             && transport.patientCondition().isPresent())
                         setEditable(false, view);
                 });
-            }catch(IllegalProcessException e){
+            }catch(IllegalProcessException | ProcessingException e){
                 Log.sendMessage("Transport konnte nicht geladen werden!");
             }
         });
@@ -276,7 +278,7 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
                     transportDetails = handler.updateTransport(transportID, tourNumber, Reference.to(startAddress.id().value()), Reference.to(endAddress.id().value()), direction, patientCondition, paymentExemption);
                 else
                     ((MainActivity) getActivity()).informationAlert("Transport nicht gefunden!", "Der Transport mit der ID \"" + transportID + "\" konnte nicht gefunden werden!");
-            } catch (ProcessingException | IllegalProcessException e) {
+            } catch (ProcessingException e) {
                 if (getActivity() == null)
                     return;
                 ((MainActivity) getActivity()).exceptionAlert("Transport konnte nicht bearbeitet werden!", e);

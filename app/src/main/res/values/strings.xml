@@ -24,7 +24,7 @@
     <string name="hint_fragment_login_user_tb_login_user">Username</string>
 
     <!-- Strings for MainPageDoctor -->
-    <string name="content_fragment_main_page_doctor_tv_field_transport_doc">Transportschein</string>
+    <string name="content_fragment_main_page_doctor_tv_field_transport_doc">Transportscheine</string>
     <string name="content_fragment_main_page_doctor_tv_field_transport">Fahrten</string>
     <string name="content_fragment_main_page_doctor_btn_transport_doc_create">Erstellen</string>
     <string name="content_fragment_main_page_doctor_btn_transport_doc_edit">Bearbeiten</string>

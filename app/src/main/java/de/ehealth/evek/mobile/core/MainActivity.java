@@ -15,6 +15,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import de.ehealth.evek.api.entity.TransportDetails;
 import de.ehealth.evek.api.exception.IllegalProcessException;
+import de.ehealth.evek.api.exception.ProcessingException;
 import de.ehealth.evek.api.exception.UserNotProvidedException;
 import de.ehealth.evek.api.util.Log;
 import de.ehealth.evek.mobile.databinding.ActivityMainBinding;
@@ -133,8 +134,7 @@ public class MainActivity extends AppCompatActivity {
                             try {
                                 Log.sendMessage("Logging out user...");
                                 handler.logout();
-                                NavController controller = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-                                runOnUiThread(() -> controller.setGraph(controller.getNavInflater().inflate(R.navigation.nav_graph)));
+                                reset();
                                 Log.sendMessage("Successfully logged out user!");
                             } catch (IllegalProcessException e) {
                                 if(!(e.getCause() instanceof UserNotProvidedException))
@@ -179,6 +179,11 @@ public class MainActivity extends AppCompatActivity {
             Log.sendException(e);
             return false;
         }
+    }
+
+    public void reset(){
+        NavController controller = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+        runOnUiThread(() -> controller.setGraph(controller.getNavInflater().inflate(R.navigation.nav_graph)));
     }
 
     /**
@@ -251,11 +256,13 @@ public class MainActivity extends AppCompatActivity {
                 NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
                 if(navController.getCurrentDestination() == null)
                     return;
+                Bundle bundle = new Bundle();
+                bundle.putString("transportID", created.id().value());
                 if(navController.getCurrentDestination().getId() == R.id.mainPageDoctorFragment)
-                    runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_editorTransportUpdateFragment));
+                    runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_editorTransportUpdateFragment, bundle));
                 else if(navController.getCurrentDestination().getId() == R.id.mainPageUserFragment)
-                    runOnUiThread(() -> navController.navigate(R.id.action_mainPageUserFragment_to_editorTransportUpdateFragment));
-            }catch(IllegalProcessException e){
+                    runOnUiThread(() -> navController.navigate(R.id.action_mainPageUserFragment_to_editorTransportUpdateFragment, bundle));
+            }catch(ProcessingException e){
                 Log.sendException(e);
                 exceptionAlert("Error assigning Transport Provider!", e);
             }

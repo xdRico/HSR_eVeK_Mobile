@@ -18,7 +18,7 @@ import com.google.zxing.WriterException;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
-import de.ehealth.evek.api.exception.IllegalProcessException;
+import de.ehealth.evek.api.exception.ProcessingException;
 import de.ehealth.evek.api.type.UserRole;
 import de.ehealth.evek.api.util.Log;
 import de.ehealth.evek.mobile.R;
@@ -66,7 +66,7 @@ public class AssignTransportFragment extends Fragment {
         Button btnSelfAssign = view.findViewById(R.id.btn_self_assign);
         DataHandler handler = DataHandler.instance();
         UserRole role = handler.getLoginUser().role();
-        if(role == UserRole.TransportAdmin || role == UserRole.SuperUser) {
+        if(role == UserRole.TransportDoctor || role == UserRole.SuperUser) {
             btnSelfAssign.setEnabled(true);
             btnSelfAssign.setVisibility(View.VISIBLE);
             btnSelfAssign.setOnClickListener((v) -> handler.runOnNetworkThread(() -> {
@@ -104,7 +104,7 @@ public class AssignTransportFragment extends Fragment {
                                 }
                                 dialog.dismiss();
                             });
-                } catch (IllegalProcessException e) {
+                } catch (ProcessingException e) {
                     Log.sendException(e);
                     if(getActivity() != null)
                         ((MainActivity) getActivity()).exceptionAlert("Transport konnte nicht zugewiesen werden!", e);

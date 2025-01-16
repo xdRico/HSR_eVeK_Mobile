@@ -18,7 +18,7 @@ import java.util.List;
 import de.ehealth.evek.api.entity.ServiceProvider;
 import de.ehealth.evek.api.entity.TransportDetails;
 import de.ehealth.evek.api.entity.TransportDocument;
-import de.ehealth.evek.api.exception.IllegalProcessException;
+import de.ehealth.evek.api.exception.ProcessingException;
 import de.ehealth.evek.api.type.Id;
 import de.ehealth.evek.api.util.Log;
 import de.ehealth.evek.mobile.R;
@@ -89,7 +89,7 @@ public class MainPageDoctorFragment extends Fragment implements TransportDocumen
                 try{
                     Id<ServiceProvider> serviceProviderId = handler.getTransportDocumentById(detail.transportDocument().id()).healthcareServiceProvider().id();
                     detailsWithSP.add(new TransportRecyclerAdapter.TransportDetailsWithServiceProvider(detail, serviceProviderId));
-                }catch(IllegalProcessException e){
+                }catch(ProcessingException e){
                     Log.sendMessage("TransportDocument not found!");
                     detailsWithSP.add(new TransportRecyclerAdapter.TransportDetailsWithServiceProvider(detail, new Id<>("No valid service provider!")));
                 }

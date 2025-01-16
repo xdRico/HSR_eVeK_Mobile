@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.sql.Date;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
@@ -146,10 +147,10 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
                     if(document.patient().isPresent())
                         ((EditText) view.findViewById(R.id.et_insurance_number)).setText(document.patient().get().id().value());
                     transportReasonAdapter.setActiveItem(document.transportReason());
-                    ((EditText) view.findViewById(R.id.et_transport_date)).setText(document.startDate().toString());
+                    ((EditText) view.findViewById(R.id.et_transport_date)).setText(new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(document.startDate().getTime()));
                     ((EditText) view.findViewById(R.id.et_service_provider)).setText(document.healthcareServiceProvider().id().value());
                     if(document.weeklyFrequency().isPresent() && document.endDate().isPresent()) {
-                        ((EditText) view.findViewById(R.id.et_end_date)).setText(document.endDate().get().toString());
+                        ((EditText) view.findViewById(R.id.et_end_date)).setText(new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(document.endDate().get().getTime()));
                         ((EditText) view.findViewById(R.id.et_weekly_frequency)).setText(String.format(Locale.GERMANY, "%d", document.weeklyFrequency().get()));
                     }
                     transportationTypeAdapter.setActiveItem(document.transportationType());
@@ -157,7 +158,7 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
                         ((EditText) view.findViewById(R.id.et_info)).setText(document.additionalInfo().get());
                     setEditable(false, view);
                 });
-            }catch(IllegalProcessException e){
+            }catch(IllegalProcessException | ProcessingException e){
                 Log.sendMessage("Transport konnte nicht geladen werden!");
             }
         });
@@ -280,7 +281,7 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
                         transportDocument = handler.updateTransportDocument(this.transportDocument, reason, startDate, endDate, weeklyFrequency, serviceProvider, type, info);
                 } else
                     transportDocument = handler.createTransportDocument(patient, insuranceData, reason, startDate, endDate, weeklyFrequency, serviceProvider, type, info);
-            }catch(IllegalProcessException | ProcessingException e){
+            }catch(ProcessingException e){
                 if(getActivity() == null)
                     return;
                 ((MainActivity) getActivity()).exceptionAlert("Transportschein konnte nicht erstellt werden!", e);

@@ -15,6 +15,8 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.util.Locale;
 
 import de.ehealth.evek.api.entity.TransportDetails;
 import de.ehealth.evek.api.entity.TransportDocument;
@@ -55,6 +57,17 @@ public class EditorTransportCreateFragment extends Fragment {
             if(transportDocumentID != null){
                 etTransportDocumentID.setText(transportDocumentID);
                 etTransportDocumentID.setEnabled(false);
+                DataHandler.instance().runOnNetworkThread(() -> {
+                        try {
+                            TransportDocument doc = DataHandler.instance().getTransportDocumentById(transportDocumentID);
+                            if(doc.endDate().isEmpty() && doc.weeklyFrequency().isEmpty()
+                                    && getActivity() != null) {
+                                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_transport_date)).setText(new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(doc.startDate().getTime())));
+                            }
+                        } catch (ProcessingException e) {
+                            Log.sendException(e);
+                        }
+                    });
             }
             etTransportDocumentID.addTextChangedListener(new TextWatcher() {
                 String old;

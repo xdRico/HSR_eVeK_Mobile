@@ -65,7 +65,7 @@ public class AssignTransportFragment extends Fragment {
 
         Button btnSelfAssign = view.findViewById(R.id.btn_self_assign);
         DataHandler handler = DataHandler.instance();
-        UserRole role = handler.getLoginUser().role();
+        UserRole role = handler.getUser().role();
         if(role == UserRole.TransportDoctor || role == UserRole.SuperUser) {
             btnSelfAssign.setEnabled(true);
             btnSelfAssign.setVisibility(View.VISIBLE);

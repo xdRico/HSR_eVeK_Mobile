@@ -7,7 +7,6 @@ import android.os.Looper;
 import androidx.security.crypto.EncryptedSharedPreferences;
 import androidx.security.crypto.MasterKey;
 
-import java.net.SocketException;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -65,7 +64,9 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
     private Thread networkThread;
     private Handler networkHandler;
 
-    private User loginUser;
+    private User user;
+    private User.LoginUser loginUser;
+
     private IComClientReceiver receiver;
     private IComClientSender sender;
     private SharedPreferences encryptedSharedPreferences;
@@ -183,7 +184,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
     public void onLoginStateChanged(Throwable isLoggedIn) {
         if (!(isLoggedIn instanceof UserLoggedInThrowable))
             return;
-        loginUser = ((UserLoggedInThrowable) isLoggedIn).getUser();
+        user = ((UserLoggedInThrowable) isLoggedIn).getUser();
     }
 
     @Override
@@ -222,6 +223,19 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         });
         networkThread.setName("eVeK-NetworkThread");
         networkThread.start();
+    }
+
+
+    private void ensureConnection() throws ProcessingException {
+        try {
+            if (serverConnection.ensureConnection())
+                return;
+        }catch(IllegalProcessException e){
+            Log.sendException(e);
+            throw new ProcessingException(e);
+        }
+        if(!tryReLogin())
+            throw new ProcessingException("Reconnecting Socket and re-login failed!");
     }
 
     /**
@@ -278,8 +292,8 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      *
      * @return {@link User} - the currently logged in {@link User}
      */
-    public User getLoginUser(){
-        return loginUser;
+    public User getUser(){
+        return user;
     }
 
     /**
@@ -318,6 +332,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      */
     public TransportDocument getTransportDocumentById(Id<TransportDocument> transportDocID) throws ProcessingException{
         try {
+            ensureConnection();
             sender.sendTransportDocument(new TransportDocument.Get(transportDocID));
             return receiver.receiveTransportDocument();
         }catch(Exception e){
@@ -354,7 +369,8 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
                                                      COptional<String> additionalInfo) throws ProcessingException {
         try{
             TransportDocument.Create cmd = new TransportDocument.Create(patient, insuranceData, transportReason, startDate, endDate,
-                    weeklyFrequency, healthcareServiceProvider,transportationType, additionalInfo, Reference.to(loginUser.id().value()));
+                    weeklyFrequency, healthcareServiceProvider,transportationType, additionalInfo, Reference.to(user.id().value()));
+            ensureConnection();
             sender.sendTransportDocument(cmd);
             TransportDocument created = receiver.receiveTransportDocument();
             addTransportDocument(created);
@@ -391,7 +407,8 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
                                                      COptional<String> additionalInfo) throws ProcessingException {
         try{
             TransportDocument.Update cmd = new TransportDocument.Update(transportDocumentId, transportReason, startDate, endDate,
-                    weeklyFrequency, healthcareServiceProvider,transportationType, additionalInfo, Reference.to(loginUser.id().value()));
+                    weeklyFrequency, healthcareServiceProvider,transportationType, additionalInfo, Reference.to(user.id().value()));
+            ensureConnection();
             sender.sendTransportDocument(cmd);
             TransportDocument updated = receiver.receiveTransportDocument();
             addTransportDocument(updated);
@@ -459,6 +476,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
                                                             Reference<InsuranceData> insuranceData) throws ProcessingException{
         try{
             TransportDocument.AssignPatient cmd = new TransportDocument.AssignPatient(transportDocumentId, patient, insuranceData);
+            ensureConnection();
             sender.sendTransportDocument(cmd);
             TransportDocument updated = receiver.receiveTransportDocument();
             addTransportDocument(updated);
@@ -479,6 +497,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         try{
             if(transportDocumentIDs.isEmpty())
                 return docs;
+            ensureConnection();
             sender.sendTransportDocument(new TransportDocument.GetListByIDList(transportDocumentIDs));
             docs = (List<TransportDocument>) receiver.receiveList();
         } catch(Exception e){
@@ -556,6 +575,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      */
     public TransportDetails getTransportDetailsById(Id<TransportDetails> transportID) throws ProcessingException{
         try {
+            ensureConnection();
             sender.sendTransportDetails(new TransportDetails.Get(transportID));
             return receiver.receiveTransportDetails();
         }catch(Exception e){
@@ -576,6 +596,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      */
     public TransportDetails createTransport(Reference<TransportDocument> transportDocumentId, Date date) throws ProcessingException {
         try{
+            ensureConnection();
             sender.sendTransportDetails(new TransportDetails.Create(transportDocumentId, date));
             TransportDetails created = receiver.receiveTransportDetails();
             addTransport(created);
@@ -596,6 +617,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         try{
             if(transportDocumentIDs.isEmpty())
                 return det;
+            ensureConnection();
             sender.sendTransportDetails(new TransportDetails.GetListByIDList(transportDetailIDs));
             det = (List<TransportDetails>) receiver.receiveList();
         } catch(Exception e){
@@ -662,27 +684,12 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         if(!input.matches("\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}"))
             throw new IllegalArgumentException("String format does not match!");
         try {
-            sender.sendTransportDetails(new TransportDetails.AssignTransportProvider(new Id<>(input), loginUser.serviceProvider()));
+            ensureConnection();
+            sender.sendTransportDetails(new TransportDetails.AssignTransportProvider(new Id<>(input), user.serviceProvider()));
             TransportDetails assigned = receiver.receiveTransportDetails();
             addTransport(assigned);
             return assigned;
         } catch (Exception e) {
-            /*if(e instanceof SocketException){
-                try{
-                    serverConnection.resetAndReconnect(loginUser);
-
-                    sender.sendTransportDetails(new TransportDetails.AssignTransportProvider(new Id<>(input), loginUser.user().serviceProvider()));
-                    TransportDetails assigned = receiver.receiveTransportDetails();
-                    addTransport(assigned);
-                    return assigned;
-                }catch(Exception ex){
-                    Log.sendException(ex);
-                    throw new ProcessingException(ex);
-                }
-            }*/
-            if(e instanceof SocketException){
-                //TODO Reconnect on every method!
-            }
             Log.sendException(e);
             throw new ProcessingException(e);
         }
@@ -706,6 +713,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
     public TransportDetails updateTransport(Id<TransportDetails> transportID, COptional<String> tourNumber, Reference<Address> startAddress, Reference<Address> endAddress,
                                             Direction direction, PatientCondition patientCondition, boolean paymentExemption) throws ProcessingException {
         try {
+            ensureConnection();
             sender.sendTransportDetails(new TransportDetails.Update(transportID, COptional.of(startAddress), COptional.of(endAddress),
                     COptional.of(direction), COptional.of(patientCondition), tourNumber, COptional.of(paymentExemption)));
             TransportDetails updated = receiver.receiveTransportDetails();
@@ -741,6 +749,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      */
     public Address getAddressById(Id<Address> addressId) throws ProcessingException {
         try {
+            ensureConnection();
             sender.sendAddress(new Address.Get(addressId));
             return receiver.receiveAddress();
         }catch(Exception e){
@@ -764,6 +773,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      */
     public Address createAddress(String street, String houseNumber, String postCode, String city, String country) throws ProcessingException {
         try{
+            ensureConnection();
             sender.sendAddress(new Address.Create(COptional.empty(), street, houseNumber, country, postCode, city));
             return receiver.receiveAddress();
         }catch(Exception e){
@@ -813,6 +823,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         new Thread (() -> {
             Throwable t = new WrongCredentialsException();
             try {
+                serverConnection.ensureConnection();
                 this.sender.loginUser(username, password);
                 User loginUser = this.receiver.receiveUser();
                 if(loginUser != null) {
@@ -821,41 +832,17 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
                              InsuranceUser, TransportAdmin, TransportInvoice ->
                                 new NoValidUserRoleException(loginUser.role(), "Mobile (App) Login");
                         case HealthcareDoctor, TransportDoctor, TransportUser, SuperUser -> {
-                            this.loginUser = loginUser;
+                            this.user = loginUser;
                             yield new UserLoggedInThrowable(loginUser);
                         }
                     };
                 }
             } catch(Exception e){
-                /*if(e instanceof SocketException){
-                    try{
-                        serverConnection.resetAndReconnect(loginUser);
-
-                        this.sender.loginUser(username, password);
-                        User loginUser = this.receiver.receiveUser();
-                        if(loginUser != null) {
-                            t = switch (loginUser.role()) {
-                                case HealthcareAdmin, HealthcareUser, InsuranceAdmin,
-                                     InsuranceUser, TransportAdmin, TransportInvoice ->
-                                        new NoValidUserRoleException(loginUser.role(), "Mobile (App) Login");
-                                case HealthcareDoctor, TransportDoctor, TransportUser, SuperUser -> {
-                                    this.loginUser = new LoginUser(loginUser, password);
-                                    yield new UserLoggedInThrowable(loginUser);
-                                }
-                            };
-                        }
-                    }catch(Exception ex){
-                        t = e;
-                    }
-                }else*/
-                if(e instanceof SocketException){
-                    //TODO Reconnect on every method!
-                }
                 t = e;
             }
             SharedPreferences.Editor editor = encryptedSharedPreferences.edit();
             if(!(t instanceof UserLoggedInThrowable)) {
-                this.loginUser = null;
+                this.user = null;
                 if(validStoring){
                     editor.putString("eVeK-password", null);
                     editor.apply();
@@ -864,6 +851,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
                 Log.sendException(t);
             }else{
                 Log.sendMessage("User " + username + " successfully logged in!");
+                loginUser = new User.LoginUser(username, password);
                 if(validStoring){
                     SharedPreferences pref = encryptedSharedPreferences;
                     String oldUsername;
@@ -889,15 +877,46 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         }).start();
     }
 
+    private boolean tryReLogin(){
+        Throwable t = new WrongCredentialsException();
+        try {
+            this.sender.loginUser(loginUser.userName(), loginUser.password());
+            User loginUser = this.receiver.receiveUser();
+            if(loginUser != null) {
+                t = switch (loginUser.role()) {
+                    case HealthcareAdmin, HealthcareUser, InsuranceAdmin,
+                         InsuranceUser, TransportAdmin, TransportInvoice ->
+                            new NoValidUserRoleException(loginUser.role(), "Mobile (App) Login");
+                    case HealthcareDoctor, TransportDoctor, TransportUser, SuperUser -> {
+                        this.user = loginUser;
+                        yield new UserLoggedInThrowable(loginUser);
+                    }
+                };
+            }
+        } catch(Exception e){
+            t = e;
+        }
+        if(!(t instanceof UserLoggedInThrowable)) {
+            this.user = null;
+            Log.sendMessage("User " + loginUser.userName() + " could not be re-logged in!");
+            Log.sendException(t);
+            changeLoginState(t);
+            return false;
+        }
+        Log.sendMessage("User " + loginUser.userName() + " successfully re-logged in!");
+        changeLoginState(t);
+        return true;
+    }
+
     /**
      * Method to logout the current {@link User}
      *
      * @throws IllegalProcessException thrown, when no {@link User} is logged in or the Server Connection could not be reset
      */
     public void logout() throws IllegalProcessException{
-        if(loginUser == null)
+        if(user == null)
             throw new IllegalProcessException(new UserNotProvidedException("No user logged in!"));
-        loginUser = null;
+        user = null;
         SharedPreferences.Editor editor = encryptedSharedPreferences.edit();
         editor.remove("eVeK-password");
         editor.apply();

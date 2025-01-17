@@ -90,7 +90,7 @@ public class MainPageUserFragment extends Fragment implements TransportRecyclerA
         DataHandler handler = DataHandler.instance();
         handler.runOnNetworkThread(() -> {
             if(obj.transportProvider().get().id().value().equalsIgnoreCase(
-                    handler.getLoginUser().serviceProvider().id().value()))
+                    handler.getUser().serviceProvider().id().value()))
                 getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageUserFragment_to_editorTransportUpdateFragment, bundle));
             else
                 ((MainActivity) getActivity()).informationAlert(getString(R.string.title_popup_transport_already_assigned), getString(R.string.content_popup_transport_already_assigned));

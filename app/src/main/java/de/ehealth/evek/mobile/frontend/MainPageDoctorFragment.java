@@ -147,7 +147,7 @@ public class MainPageDoctorFragment extends Fragment implements TransportDocumen
             if(obj.transportProvider() == null || obj.transportProvider().isEmpty())
                 getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_assignTransportFragment, bundle));
             else if(obj.transportProvider().get().id().value().equalsIgnoreCase(
-                    handler.getLoginUser().serviceProvider().id().value()))
+                    handler.getUser().serviceProvider().id().value()))
                 getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_editorTransportUpdateFragment, bundle));
             else
                 ((MainActivity) getActivity()).informationAlert(getString(R.string.title_popup_transport_already_assigned), getString(R.string.content_popup_transport_already_assigned));

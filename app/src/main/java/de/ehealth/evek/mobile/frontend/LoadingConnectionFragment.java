@@ -106,7 +106,7 @@ public class LoadingConnectionFragment extends Fragment implements IsInitialized
         }
 
         NavController navController = NavHostFragment.findNavController(LoadingConnectionFragment.this);
-        NavGraph newNavGraph = switch(DataHandler.instance().getLoginUser().role()) {
+        NavGraph newNavGraph = switch(DataHandler.instance().getUser().role()) {
             case HealthcareDoctor, TransportDoctor, SuperUser ->
                     navController.getNavInflater().inflate(R.navigation.nav_graph_doctor);
             case TransportUser ->

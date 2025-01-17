@@ -104,7 +104,7 @@ public class LoginUserFragment extends Fragment implements IsLoggedInListener {
         }
 
         NavController navController = NavHostFragment.findNavController(LoginUserFragment.this);
-        NavGraph newNavGraph = switch(DataHandler.instance().getLoginUser().role()) {
+        NavGraph newNavGraph = switch(DataHandler.instance().getUser().role()) {
             case HealthcareDoctor, TransportDoctor, SuperUser ->
                 navController.getNavInflater().inflate(R.navigation.nav_graph_doctor);
             case TransportUser ->

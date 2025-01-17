@@ -186,6 +186,37 @@ public class ServerConnection implements IsInitializedListener {
         }
     }
 
+
+    /**
+     * Method to re-initialize the Server connection with the currently set Network properties, only single initialization try
+     *
+     * @throws IllegalStateException thrown, when the initialization could not be finished
+     */
+    void reInitConnection(){
+        if (isInitialized)
+            throw new IllegalStateException("Connection already initialized!");
+
+        Log.sendMessage("Trying to initialize server connection...");
+        addIsInitializedListener(this);
+
+        try {
+            server = new Socket();
+            SocketAddress endpoint = new InetSocketAddress(serverAddress, serverPort);
+            server.connect(endpoint, msToWaitWhileConnecting);
+            sender = new ComClientSender(server);
+            receiver = new ComClientReceiver(server);
+            sender.useEncryption(receiver);
+            setInitialized(true);
+            Log.sendMessage("Server connection has been successfully initialized!");
+        } catch (EncryptionException e) {
+            Log.sendException(e);
+            Log.sendMessage("Connection not encrypted!");
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /**
      * Method to be called to close and reset the current server connection. <br>
      * The connection isn't restarted!
@@ -203,5 +234,28 @@ public class ServerConnection implements IsInitializedListener {
             Log.sendException(e);
             throw new IllegalProcessException(e);
         }
+    }
+
+    /**
+     * Method to be called to close and reset the current server connection and reinit after. <br>
+     * The connection is restarted.
+     *
+     * @throws IllegalProcessException thrown, when the connection could not be reset
+     */
+    boolean ensureConnection() throws IllegalProcessException {
+
+        if(sender.testConnection())
+            return true;
+
+        if(!isInitialized)
+            throw new IllegalProcessException("Connection not initialized!");
+        try {
+            server.close();
+        }catch(IOException ignored){
+        }
+
+        setInitialized(false);
+        reInitConnection();
+        return false;
     }
 }

@@ -1,5 +1,6 @@
 package de.ehealth.evek.mobile.frontend;
 
+import android.annotation.SuppressLint;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
@@ -193,6 +194,7 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
      *
      * @param view the {@link View} calling the method
      */
+    @SuppressLint("PrivateResource")
     private void createTransportDoc(View view) {
         DataHandler.instance().runOnNetworkThread(() -> {
             boolean valid = true;
@@ -225,19 +227,27 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
             if(!infoStr.isBlank())
                 info = COptional.of(infoStr);
 
-            try{
-                startDate = DataHandler.getDate(((EditText) view.findViewById(R.id.et_transport_date)).getText().toString());
-            }catch(Exception e){
-                Log.sendException(e);
-                valid = false;
+
+            if(((EditText) view.findViewById(R.id.et_transport_date)).getText().toString().isBlank()){
                 getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_transport_date)).setHintTextColor(Color.argb(255, 255, 100, 100)));
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_transport_date)).setTextColor(Color.argb(255, 255, 100, 100)));
+                valid = false;
+            }else {
+                try {
+                    startDate = DataHandler.getDate(((EditText) view.findViewById(R.id.et_transport_date)).getText().toString());
+                    getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_transport_date)).setTextColor(getActivity().getColor(com.google.android.material.R.color.m3_default_color_primary_text)));
+                } catch (Exception e) {
+                    Log.sendException(e);
+                    valid = false;
+                    getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_transport_date)).setHintTextColor(Color.argb(255, 255, 100, 100)));
+                    getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_transport_date)).setTextColor(Color.argb(255, 255, 100, 100)));
+                }
             }
 
             if(!((EditText) view.findViewById(R.id.et_end_date)).getText().toString().isBlank()
                     && !((EditText) view.findViewById(R.id.et_weekly_frequency)).getText().toString().isBlank()){
                 try{
                     weeklyFrequency = COptional.of(Integer.parseInt(((EditText) view.findViewById(R.id.et_weekly_frequency)).getText().toString()));
+                    getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_weekly_frequency)).setTextColor(getActivity().getColor(com.google.android.material.R.color.m3_default_color_primary_text)));
                 }catch(NumberFormatException e){
                     Log.sendException(e);
                     getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_weekly_frequency)).setTextColor(Color.argb(255, 255, 100, 100)));
@@ -246,6 +256,7 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
                 }
                 try{
                     endDate = COptional.of(DataHandler.getDate(((EditText) view.findViewById(R.id.et_end_date)).getText().toString()));
+                    getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_end_date)).setTextColor(getActivity().getColor(com.google.android.material.R.color.m3_default_color_primary_text)));
                 }catch(IllegalProcessException e) {
                     Log.sendException(e);
                     getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_end_date)).setTextColor(Color.argb(255, 255, 100, 100)));
@@ -255,13 +266,42 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
             else if(!((EditText) view.findViewById(R.id.et_end_date)).getText().toString().isBlank()
                     || !((EditText) view.findViewById(R.id.et_weekly_frequency)).getText().toString().isBlank()){
 
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_end_date)).setHintTextColor(Color.argb(255, 255, 100, 100)));
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_end_date)).setTextColor(Color.argb(255, 255, 100, 100)));
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_weekly_frequency)).setHintTextColor(Color.argb(255, 255, 100, 100)));
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_weekly_frequency)).setTextColor(Color.argb(255, 255, 100, 100)));
+                getActivity().runOnUiThread(() -> {
+                    ((EditText) view.findViewById(R.id.et_end_date)).setHintTextColor(Color.argb(255, 255, 100, 100));
+                    ((EditText) view.findViewById(R.id.et_end_date)).setTextColor(Color.argb(255, 255, 100, 100));
+                    ((EditText) view.findViewById(R.id.et_weekly_frequency)).setHintTextColor(Color.argb(255, 255, 100, 100));
+                    ((EditText) view.findViewById(R.id.et_weekly_frequency)).setTextColor(Color.argb(255, 255, 100, 100));
+                } );
 
                 valid = false;
-            }
+            }else
+                getActivity().runOnUiThread(() -> {
+                    ((EditText) view.findViewById(R.id.et_end_date)).setHintTextColor(getActivity().getColor(com.google.android.material.R.color.m3_hint_foreground));
+                    ((EditText) view.findViewById(R.id.et_end_date)).setTextColor(getActivity().getColor(com.google.android.material.R.color.m3_default_color_primary_text));
+                    ((EditText) view.findViewById(R.id.et_weekly_frequency)).setHintTextColor(getActivity().getColor(com.google.android.material.R.color.m3_hint_foreground));
+                    ((EditText) view.findViewById(R.id.et_weekly_frequency)).setTextColor(getActivity().getColor(com.google.android.material.R.color.m3_default_color_primary_text));
+                } );
+
+            if(type == TransportationType.KTW || reason == TransportReason.ContinuousImpairment
+                    || reason == TransportReason.HighFrequentAlike || reason == TransportReason.OtherKTW)
+                if(info.isEmpty()){
+                    getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_info)).setHintTextColor(Color.argb(255, 255, 100, 100)));
+                    getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_info)).setTextColor(Color.argb(255, 255, 100, 100)));
+                    valid = false;
+                }else
+                    getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_info)).setTextColor(getActivity().getColor(com.google.android.material.R.color.m3_default_color_primary_text)));
+
+            if(type == null){
+                transportationTypeAdapter.setValid(false);
+                valid = false;
+            }else
+                transportationTypeAdapter.setValid(true);
+
+            if(reason == null){
+                transportReasonAdapter.setValid(false);
+                valid = false;
+            }else
+                transportReasonAdapter.setValid(true);
 
             if(!valid)
                 return;
@@ -324,15 +364,22 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
 
     @Override
     public <T> void onItemClick(T obj, int position) {
-        if (obj == TransportReason.class)
+        if (obj == TransportReason.class) {
             reason = transportReasonAdapter.getItem(position);
-
+            if (reason == TransportReason.OtherKTW) {
+                transportationTypeAdapter.setActiveItem(TransportationType.KTW);
+                type = TransportationType.KTW;
+                transportationTypeAdapter.setEditable(false);
+            } else {
+                transportationTypeAdapter.setEditable(true);
+            }
+            transportReasonAdapter.setValid(true);
             //Debug.sendMessage("Clicked on " + transportReasonAdapter.getItem(position).toString() + " on position " + position);
-
-        else if(obj == TransportationType.class)
+        }
+        else if(obj == TransportationType.class) {
             type = transportationTypeAdapter.getItem(position);
-
+            transportationTypeAdapter.setValid(true);
             //Debug.sendMessage("Clicked on " + transportationTypeAdapter.getItem(position).toString() + " on position " + position);
-
+        }
     }
 }

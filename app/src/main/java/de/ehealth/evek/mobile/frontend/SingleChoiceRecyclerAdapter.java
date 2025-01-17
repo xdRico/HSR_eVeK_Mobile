@@ -115,9 +115,13 @@ public class SingleChoiceRecyclerAdapter<T> extends RecyclerView.Adapter<SingleC
 
         @Override
         public void onClick(View view) {
-
+            CheckBox checkBox = (CheckBox) view;
+            if(!checkBox.isChecked()){
+                checkBox.setChecked(true);
+                return;
+            }
             for(CheckBox box : checkBoxes)
-                if(box != view) box.setChecked(false);
+                if(box != checkBox) box.setChecked(false);
             if (mClickListener != null)
                 mClickListener.onItemClick(t, getAdapterPosition());
         }

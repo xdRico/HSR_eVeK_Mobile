@@ -726,6 +726,54 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
     }
 
     /**
+     * Method to update a {@link TransportDetails Transport} with the given parameters
+     *
+     * @param transportID the {@link Id} of the {@link TransportDetails Transport} to be updated
+     * @param signature the signature of the transport personal
+     * @param date the date of the signature
+     *
+     * @return {@link TransportDetails} - the {@link TransportDetails Transport} with the updated properties
+     *
+     * @throws ProcessingException thrown, when the {@link TransportDetails Transport} could not be assigned
+     */
+    public TransportDetails updateTransportTransporterSignature(Id<TransportDetails> transportID, String signature, Date date) throws ProcessingException {
+        try {
+            ensureConnection();
+            sender.sendTransportDetails(new TransportDetails.UpdateTransporterSignature(transportID, signature, date));
+            TransportDetails updated = receiver.receiveTransportDetails();
+            addTransport(updated);
+            return updated;
+        }catch(Exception e){
+            Log.sendException(e);
+            throw new ProcessingException(e);
+        }
+    }
+
+    /**
+     * Method to update a {@link TransportDetails Transport} with the given parameters
+     *
+     * @param transportID the {@link Id} of the {@link TransportDetails Transport} to be updated
+     * @param signature the signature of the patient
+     * @param date the date of the signature
+     *
+     * @return {@link TransportDetails} - the {@link TransportDetails Transport} with the updated properties
+     *
+     * @throws ProcessingException thrown, when the {@link TransportDetails Transport} could not be assigned
+     */
+    public TransportDetails updateTransportPatientSignature(Id<TransportDetails> transportID, String signature, Date date) throws ProcessingException {
+        try {
+            ensureConnection();
+            sender.sendTransportDetails(new TransportDetails.UpdatePatientSignature(transportID, signature, date));
+            TransportDetails updated = receiver.receiveTransportDetails();
+            addTransport(updated);
+            return updated;
+        }catch(Exception e){
+            Log.sendException(e);
+            throw new ProcessingException(e);
+        }
+    }
+
+    /**
      * Method to get an {@link Address} by its {@link Id}
      *
      * @param addressId the {@link Id} of the {@link Address} as {@link String}

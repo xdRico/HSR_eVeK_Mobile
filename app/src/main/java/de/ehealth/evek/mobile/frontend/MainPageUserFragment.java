@@ -90,10 +90,18 @@ public class MainPageUserFragment extends Fragment implements TransportRecyclerA
         DataHandler handler = DataHandler.instance();
         handler.runOnNetworkThread(() -> {
             if(obj.transportProvider().get().id().value().equalsIgnoreCase(
-                    handler.getUser().serviceProvider().id().value()))
-                getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageUserFragment_to_editorTransportUpdateFragment, bundle));
-            else
-                ((MainActivity) getActivity()).informationAlert(getString(R.string.title_popup_transport_already_assigned), getString(R.string.content_popup_transport_already_assigned));
+                    handler.getUser().serviceProvider().id().value())) {
+
+                if(obj.transporterSignature().isPresent() && obj.transporterSignatureDate().isPresent()){
+                    if(obj.patientSignature().isPresent() && obj.patientSignatureDate().isPresent())
+                        ((MainActivity) getActivity()).informationAlert(getString(R.string.title_popup_illegal_operation), getString(R.string.content_popup_transport_already_signed));
+                    else
+                        getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageUserFragment_to_patientSignatureFragment, bundle));
+                }else{
+                    getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageUserFragment_to_editorTransportUpdateFragment, bundle));
+                }
+            } else
+                ((MainActivity) getActivity()).informationAlert(getString(R.string.title_popup_illegal_operation), getString(R.string.content_popup_transport_already_assigned));
         });
     }
 

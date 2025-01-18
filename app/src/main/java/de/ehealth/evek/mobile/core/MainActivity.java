@@ -301,6 +301,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
+     * Method to create a new Alert displaying a message
+     *
+     * @param title the title for the Alert
+     * @param message the String to be displayed
+     * @param buttonConfirmListener the Listener to be performed on click of the right (confirm) Button
+     */
+    public void informationAlert(String title, String message, DialogInterface.OnClickListener buttonConfirmListener) {
+        runOnUiThread(() -> InformationAlert.showDialog(getSupportFragmentManager(), title, message, buttonConfirmListener));
+    }
+
+    /**
+     * Method to create a new Alert displaying a message
+     *
+     * @param title the title for the Alert
+     * @param message the String to be displayed
+     * @param confirm the Message to show on the confirm button
+     * @param buttonConfirmListener the Listener to be performed on click of the right (confirm) Button
+     */
+    public void informationAlert(String title, String message, String confirm, DialogInterface.OnClickListener buttonConfirmListener) {
+        runOnUiThread(() -> InformationAlert.showDialog(getSupportFragmentManager(), title, message, confirm, buttonConfirmListener));
+    }
+
+    /**
      * Method to create a new Alert displaying a message and containing a cancel button and a custom button
      *
      * @param title the title for the Alert

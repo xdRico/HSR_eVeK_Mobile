@@ -3,11 +3,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph_doctor"
+    android:label="e-VeK - Arzt"
     app:startDestination="@id/mainPageDoctorFragment">
 
     <fragment
         android:id="@+id/mainPageDoctorFragment"
         android:name="de.ehealth.evek.mobile.frontend.MainPageDoctorFragment"
+        android:label="e-VeK - Arzt"
         tools:layout="@layout/fragment_main_page_doctor">
         <action
             android:id="@+id/action_mainPageDoctorFragment_to_editorTransportDocFragment"
@@ -21,10 +23,14 @@
         <action
             android:id="@+id/action_mainPageDoctorFragment_to_assignTransportFragment"
             app:destination="@id/assignTransportFragment" />
+        <action
+            android:id="@+id/action_mainPageDoctorFragment_to_patientSignatureFragment"
+            app:destination="@id/patientSignatureFragment" />
     </fragment>
     <fragment
         android:id="@+id/editorTransportDocumentFragment"
         android:name="de.ehealth.evek.mobile.frontend.EditorTransportDocumentFragment"
+        android:label="e-VeK - Transportschein"
         tools:layout="@layout/fragment_editor_transport_document">
         <action
             android:id="@+id/action_doctorEditorTransportDocFragment_to_editorTransportCreateFragment"
@@ -33,6 +39,7 @@
     <fragment
         android:id="@+id/editorTransportCreateFragment"
         android:name="de.ehealth.evek.mobile.frontend.EditorTransportCreateFragment"
+        android:label="e-VeK - Transport"
         tools:layout="@layout/fragment_editor_transport_create">
         <action
             android:id="@+id/action_editorTransportCreateFragment_to_assignTransportFragment"
@@ -41,6 +48,7 @@
     <fragment
         android:id="@+id/assignTransportFragment"
         android:name="de.ehealth.evek.mobile.frontend.AssignTransportFragment"
+        android:label="e-VeK - Transportzuweisung"
         tools:layout="@layout/fragment_assign_transport">
         <action
             android:id="@+id/action_assignTransportFragment_to_editorTransportUpdateFragment"
@@ -49,5 +57,15 @@
     <fragment
         android:id="@+id/editorTransportUpdateFragment"
         android:name="de.ehealth.evek.mobile.frontend.EditorTransportUpdateFragment"
-        tools:layout="@layout/fragment_editor_transport_update" />
+        android:label="e-VeK - Transport"
+        tools:layout="@layout/fragment_editor_transport_update">
+        <action
+            android:id="@+id/action_editorTransportUpdateFragment_to_patientSignatureFragment"
+            app:destination="@id/patientSignatureFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/patientSignatureFragment"
+        android:name="de.ehealth.evek.mobile.frontend.PatientSignatureFragment"
+        android:label="e-VeK - Validieren"
+        tools:layout="@layout/fragment_patient_signature" />
 </navigation>

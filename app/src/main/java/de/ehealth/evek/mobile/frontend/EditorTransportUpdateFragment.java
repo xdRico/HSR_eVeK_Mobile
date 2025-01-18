@@ -17,6 +17,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ToggleButton;
 
+import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +37,8 @@ import de.ehealth.evek.api.util.Log;
 import de.ehealth.evek.mobile.R;
 import de.ehealth.evek.mobile.core.MainActivity;
 import de.ehealth.evek.mobile.network.DataHandler;
+import se.warting.signatureview.views.SignaturePad;
+import se.warting.signatureview.views.SignedListener;
 
 /**
  * Class belonging to the EditorTransportUpdate Fragment
@@ -48,6 +51,8 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
     private SingleChoiceRecyclerAdapter<PatientCondition> patientConditionAdapter;
     private Id<TransportDetails> transportID = null;
     private PatientCondition patientCondition = null;
+    private SignaturePad transporterSignaturePad = null;
+    private boolean validSigning = false;
 
 
     @Override
@@ -60,6 +65,10 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
                 && !transportID.isBlank())
             this.transportID = new Id<>(transportID);
     }
+
+    //TODO implement frontend for patient data
+    //TODO implement frontend for validation of data
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -78,6 +87,32 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
 
         view.findViewById(R.id.btn_save_transportdoc).setOnClickListener((v) -> updateTransport(view));
         view.findViewById(R.id.btn_edit_transportdoc).setOnClickListener((v) -> setEditable(true, view));
+
+        transporterSignaturePad = view.findViewById(R.id.sp_transporter);
+
+        transporterSignaturePad.setOnSignedListener(new SignedListener() {
+
+            @Override
+            public void onSigning() {
+            }
+
+            @Override
+            public void onStartSigning() {
+                //validSigning = true;
+            }
+
+            @Override
+            public void onClear() {
+                validSigning = false;
+            }
+
+            @Override
+            public void onSigned() {
+                validSigning = true;
+            }
+        });
+
+        view.findViewById(R.id.ib_delete_signature_transporter).setOnClickListener((v) -> transporterSignaturePad.clear());
 
         //set Active Transport, if given
         if(transportID == null)
@@ -128,12 +163,18 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
                     if(transport.paymentExemption().isPresent())
                         ((CheckBox) view.findViewById(R.id.cb_payment_exemption)).setChecked(transport.paymentExemption().get());
 
-                    if(transport.tourNumber().isPresent()
-                            && transport.direction().isPresent()
+                    if(transport.direction().isPresent()
                             && startAddress.isPresent()
                             && endAddress.isPresent()
-                            && transport.patientCondition().isPresent())
+                            && transport.patientCondition().isPresent()) {
                         setEditable(false, view);
+                        if (transport.transporterSignatureDate().isPresent()
+                                && transport.transporterSignature().isPresent()) {
+                            view.findViewById(R.id.constraint_edit).setVisibility(View.GONE);
+                            view.findViewById(R.id.constraint_edit).setEnabled(false);
+
+                        }
+                    }
                 });
             }catch(IllegalProcessException | ProcessingException e){
                 Log.sendMessage("Transport konnte nicht geladen werden!");
@@ -165,6 +206,7 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
         view.findViewById(R.id.constraint_edit).setVisibility(!editable ? View.VISIBLE : View.GONE);
         view.findViewById(R.id.constraint_edit).setEnabled(!editable);
         patientConditionAdapter.setEditable(editable);
+        transporterSignaturePad.setEnabled(editable);
     }
 
     /**
@@ -274,9 +316,15 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
 
                 transportDetails = handler.getTransportDetailsById(this.transportID);
 
-                if (transportDetails != null)
+                if (transportDetails != null){
                     transportDetails = handler.updateTransport(transportID, tourNumber, Reference.to(startAddress.id().value()), Reference.to(endAddress.id().value()), direction, patientCondition, paymentExemption);
-                else
+                    if(validSigning){
+                        TransportDetails tempTransportDetails = handler.updateTransportTransporterSignature(transportID, transporterSignaturePad.getSignatureBitmap().toString(), new Date(System.currentTimeMillis()));
+                        if(tempTransportDetails != null)
+                            transportDetails = tempTransportDetails;
+                    }
+
+                } else
                     ((MainActivity) getActivity()).informationAlert("Transport nicht gefunden!", "Der Transport mit der ID \"" + transportID + "\" konnte nicht gefunden werden!");
             } catch (ProcessingException e) {
                 if (getActivity() == null)
@@ -288,15 +336,34 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
                 return;
 
             TransportDetails finalTransportDetails = transportDetails;
-            getActivity().runOnUiThread(() -> {
+            NavController navController = NavHostFragment.findNavController(EditorTransportUpdateFragment.this);
+
+            if(finalTransportDetails.transporterSignature().isPresent() && finalTransportDetails.transporterSignatureDate().isPresent())
                 ((MainActivity) getActivity()).informationAlert("Transport wurde bearbeitet!",
-                        "Transport mit ID " + finalTransportDetails.id().value() + " wurde erfolgreich bearbeitet!");
-                NavController navController = NavHostFragment.findNavController(EditorTransportUpdateFragment.this);
-                if (navController.getCurrentDestination() == null
-                        || navController.getCurrentDestination().getId() != R.id.editorTransportUpdateFragment)
-                    return;
-                navController.navigateUp();
-            });
+                        "Transport mit ID " + finalTransportDetails.id().value() + " wurde erfolgreich bearbeitet!",
+                        (dialog, which) -> getActivity().runOnUiThread(() -> {
+                            if (navController.getCurrentDestination() == null
+                                    || navController.getCurrentDestination().getId() != R.id.editorTransportUpdateFragment)
+                                return;
+                            navController.navigateUp();
+                        })
+                );
+
+            else
+                ((MainActivity) getActivity()).choiceAlert("Transport wurde bearbeitet!", "Transport mit ID " + finalTransportDetails.id().value()
+                                + " wurde erfolgreich bearbeitet! \n\r Soll der Transport vom Patienten validiert werden?",
+                        "Nein", (dialog, which) -> getActivity().runOnUiThread(() -> {
+                            if (navController.getCurrentDestination() == null
+                                    || navController.getCurrentDestination().getId() != R.id.editorTransportUpdateFragment)
+                                return;
+                            navController.navigateUp();
+                        }),
+                        "Ja, validieren", (dialog, which) -> getActivity().runOnUiThread(() -> {
+                            Bundle bundle = new Bundle();
+                            bundle.putString("transportID", finalTransportDetails.id().value());
+                            navController.navigate(R.id.action_editorTransportUpdateFragment_to_patientSignatureFragment, bundle);
+                        })
+                );
         });
     }
 

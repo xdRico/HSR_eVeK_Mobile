@@ -1,6 +1,7 @@
 package de.ehealth.evek.mobile.frontend.alert;
 
 import android.app.Dialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.Button;
 
@@ -36,14 +37,14 @@ public class InformationAlert extends DialogFragment {
      * @param message message for the {@link Dialog} to show
      * @param confirm text for the confirm {@link Button} to show
      */
-    private InformationAlert(String title, String message, String confirm) {
+    private InformationAlert(String title, String message, String confirm, DialogInterface.OnClickListener buttonConfirmListener) {
         if (AlertHandler.getCurrentDialog() != null)
             AlertHandler.dismiss();
 
         AlertHandler.setCurrent(new AlertDialog.Builder(ClientMain.instance().getContext())
                 .setTitle(title)
                 .setMessage(message)
-                .setPositiveButton(confirm, (dialog, which) -> AlertHandler.getCurrentDialog().dismiss()));
+                .setPositiveButton(confirm, buttonConfirmListener));
     }
 
     @NonNull
@@ -76,8 +77,43 @@ public class InformationAlert extends DialogFragment {
      */
     public static void showDialog(FragmentManager fragmentManager, String title, String message, String confirm) {
         try {
-            InformationAlert alert = new InformationAlert(title, message, confirm);
-            alert.show(fragmentManager, "exception_dialog");
+            InformationAlert alert = new InformationAlert(title, message, confirm, (dialog, which) -> AlertHandler.getCurrentDialog().dismiss());
+            alert.show(fragmentManager, "information_dialog");
+        } catch (NullPointerException ex) {
+            Log.sendException(ex);
+        }
+    }
+
+    /**
+     * Method used to create and show a new {@link Dialog} with the given properties.
+     *
+     * @param fragmentManager {@link FragmentManager} to call the {@link Dialog} from
+     * @param title title for the {@link Dialog} to show
+     * @param message message for the {@link Dialog} to show
+     * @param buttonConfirmListener listener for the confirm {@link Button} to call on click
+     */
+    public static void showDialog(FragmentManager fragmentManager, String title, String message, DialogInterface.OnClickListener buttonConfirmListener) {
+        try {
+            InformationAlert alert = new InformationAlert(title, message, "OK", buttonConfirmListener);
+            alert.show(fragmentManager, "information_dialog");
+        } catch (NullPointerException ex) {
+            Log.sendException(ex);
+        }
+    }
+
+    /**
+     * Method used to create and show a new {@link Dialog} with the given properties.
+     *
+     * @param fragmentManager {@link FragmentManager} to call the {@link Dialog} from
+     * @param title title for the {@link Dialog} to show
+     * @param message message for the {@link Dialog} to show
+     * @param confirm text for the confirm {@link Button} to show
+     * @param buttonConfirmListener listener for the confirm {@link Button} to call on click
+     */
+    public static void showDialog(FragmentManager fragmentManager, String title, String message, String confirm, DialogInterface.OnClickListener buttonConfirmListener) {
+        try {
+            InformationAlert alert = new InformationAlert(title, message, confirm, buttonConfirmListener);
+            alert.show(fragmentManager, "information_dialog");
         } catch (NullPointerException ex) {
             Log.sendException(ex);
         }

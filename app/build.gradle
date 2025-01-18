@@ -35,9 +35,9 @@ android {
         viewBinding true
     }
 }
-
 dependencies {
     implementation libs.appcompat
+    implementation libs.fragment.ktx
     implementation libs.material
     implementation libs.constraintlayout
     implementation libs.navigation.fragment
@@ -52,4 +52,5 @@ dependencies {
     androidTestImplementation libs.espresso.core
     implementation libs.core
     implementation libs.zxing
+    implementation libs.signature.view
 }

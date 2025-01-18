@@ -147,10 +147,20 @@ public class MainPageDoctorFragment extends Fragment implements TransportDocumen
             if(obj.transportProvider() == null || obj.transportProvider().isEmpty())
                 getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_assignTransportFragment, bundle));
             else if(obj.transportProvider().get().id().value().equalsIgnoreCase(
-                    handler.getUser().serviceProvider().id().value()))
-                getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_editorTransportUpdateFragment, bundle));
-            else
-                ((MainActivity) getActivity()).informationAlert(getString(R.string.title_popup_transport_already_assigned), getString(R.string.content_popup_transport_already_assigned));
+                    handler.getUser().serviceProvider().id().value())){
+                if(obj.transporterSignature().isPresent() && obj.transporterSignatureDate().isPresent()){
+                    if(obj.patientSignature().isPresent() && obj.patientSignatureDate().isPresent())
+                        ((MainActivity) getActivity()).informationAlert(getString(R.string.title_popup_illegal_operation), getString(R.string.content_popup_transport_already_signed));
+                    else
+                        getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_patientSignatureFragment, bundle));
+                        /*((MainActivity) getActivity()).choiceAlert("Transport validieren?", "Soll der Transport bearbeitet oder vom Patienten validiert werden?",
+                                "Bearbeiten", (dialog, which) -> getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_editorTransportUpdateFragment, bundle)),
+                                "Validieren", (dialog, which) -> getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_patientSignatureFragment, bundle)));*/
+                }else{
+                    getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_editorTransportUpdateFragment, bundle));
+                }
+            } else
+                ((MainActivity) getActivity()).informationAlert(getString(R.string.title_popup_illegal_operation), getString(R.string.content_popup_transport_already_assigned));
         });
     }
 

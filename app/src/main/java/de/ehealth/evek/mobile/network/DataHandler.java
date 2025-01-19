@@ -615,7 +615,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
     public List<TransportDetails> getTransportDetails(){
         List<TransportDetails> det = new ArrayList<>();
         try{
-            if(transportDocumentIDs.isEmpty())
+            if(transportDetailIDs.isEmpty())
                 return det;
             ensureConnection();
             sender.sendTransportDetails(new TransportDetails.GetListByIDList(transportDetailIDs));

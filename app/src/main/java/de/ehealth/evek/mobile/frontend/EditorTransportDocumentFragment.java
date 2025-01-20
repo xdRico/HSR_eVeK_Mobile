@@ -428,7 +428,7 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
                     getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_info)).setTextColor(mistakeColor.data));
                     valid = false;
                 }else
-                    getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_info)).setTextColor(getActivity().getColor(textColor.data)));
+                    getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_info)).setTextColor(textColor.data));
 
             if(type == null){
                 transportationTypeAdapter.setValid(false);

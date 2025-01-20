@@ -31,7 +31,8 @@ import de.ehealth.evek.mobile.network.DataHandler;
  *
  * @implements {@link TransportRecyclerAdapter.ItemClickListener}
  */
-public class MainPageUserFragment extends Fragment implements TransportRecyclerAdapter.ItemClickListener, DataHandler.TransportsChangedListener {
+public class MainPageUserFragment extends Fragment implements TransportRecyclerAdapter.ItemClickListener,
+        DataHandler.TransportsChangedListener {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

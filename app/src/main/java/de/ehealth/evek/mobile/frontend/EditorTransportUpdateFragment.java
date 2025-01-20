@@ -1,6 +1,5 @@
 package de.ehealth.evek.mobile.frontend;
 
-import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -10,6 +9,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -66,7 +66,7 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
             this.transportID = new Id<>(transportID);
     }
 
-    //TODO implement frontend for patient data
+    //TODO implement frontend for showing patient data
     //TODO implement frontend for validation of data
 
 
@@ -241,53 +241,58 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
             String endZipCodeStr = ((EditText) view.findViewById(R.id.et_address_end_zipcode)).getText().toString();
             String endCityStr = ((EditText) view.findViewById(R.id.et_address_end_city)).getText().toString();
 
+            TypedValue hintColor = new TypedValue();
+            TypedValue mistakeColor = new TypedValue();
+            getActivity().getTheme().resolveAttribute(android.R.attr.textColorHint, hintColor, true);
+            getActivity().getTheme().resolveAttribute(android.R.attr.colorError, mistakeColor, true);
+
             if (startStreetStr.isBlank()) {
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_start_street)).setHintTextColor(Color.argb(255, 255, 100, 100)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_start_street)).setHintTextColor(mistakeColor.data));
                 valid = false;
             } else
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_start_street)).setHintTextColor(Color.argb(255, 0, 0, 0)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_start_street)).setHintTextColor(hintColor.data));
 
             if (startHouseNrStr.isBlank()) {
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_start_housenumber)).setHintTextColor(Color.argb(255, 255, 100, 100)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_start_housenumber)).setHintTextColor(mistakeColor.data));
                 valid = false;
             } else
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_start_housenumber)).setHintTextColor(Color.argb(255, 0, 0, 0)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_start_housenumber)).setHintTextColor(hintColor.data));
 
             if (startZipCodeStr.isBlank()) {
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_start_zipcode)).setHintTextColor(Color.argb(255, 255, 100, 100)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_start_zipcode)).setHintTextColor(mistakeColor.data));
                 valid = false;
             } else
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_start_zipcode)).setHintTextColor(Color.argb(255, 0, 0, 0)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_start_zipcode)).setHintTextColor(hintColor.data));
 
             if (startCityStr.isBlank()) {
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_start_city)).setHintTextColor(Color.argb(255, 255, 100, 100)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_start_city)).setHintTextColor(mistakeColor.data));
                 valid = false;
             } else
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_start_city)).setHintTextColor(Color.argb(255, 0, 0, 0)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_start_city)).setHintTextColor(hintColor.data));
 
             if (endStreetStr.isBlank()) {
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_end_street)).setHintTextColor(Color.argb(255, 255, 100, 100)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_end_street)).setHintTextColor(mistakeColor.data));
                 valid = false;
             } else
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_end_street)).setHintTextColor(Color.argb(255, 0, 0, 0)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_end_street)).setHintTextColor(hintColor.data));
 
             if (endHouseNrStr.isBlank()) {
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_end_housenumber)).setHintTextColor(Color.argb(255, 255, 100, 100)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_end_housenumber)).setHintTextColor(mistakeColor.data));
                 valid = false;
             } else
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_end_housenumber)).setHintTextColor(Color.argb(255, 0, 0, 0)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_end_housenumber)).setHintTextColor(hintColor.data));
 
             if (endZipCodeStr.isBlank()) {
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_end_zipcode)).setHintTextColor(Color.argb(255, 255, 100, 100)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_end_zipcode)).setHintTextColor(mistakeColor.data));
                 valid = false;
             } else
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_end_zipcode)).setHintTextColor(Color.argb(255, 0, 0, 0)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_end_zipcode)).setHintTextColor(hintColor.data));
 
             if (endCityStr.isBlank()) {
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_end_city)).setHintTextColor(Color.argb(255, 255, 100, 100)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_end_city)).setHintTextColor(mistakeColor.data));
                 valid = false;
             } else
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_end_city)).setHintTextColor(Color.argb(255, 0, 0, 0)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_address_end_city)).setHintTextColor(hintColor.data));
 
             if (patientCondition == null) {
                 getActivity().runOnUiThread(() -> patientConditionAdapter.setValid(false));
@@ -371,8 +376,6 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
     public <T> void onItemClick(T obj, int position) {
         if (obj == PatientCondition.class)
             patientCondition = patientConditionAdapter.getItem(position);
-
-            //Debug.sendMessage("Clicked on " + transportReasonAdapter.getItem(position).toString() + " on position " + position);
     }
 
 }

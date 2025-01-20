@@ -1,9 +1,9 @@
 package de.ehealth.evek.mobile.frontend;
 
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -131,8 +131,6 @@ public class EditorTransportCreateFragment extends Fragment {
     private void createTransport(View view) {
         DataHandler.instance().runOnNetworkThread(() -> {
             boolean valid = true;
-            //TODO insuranceData!
-
 
             String transportDocStr = ((EditText) view.findViewById(R.id.et_transport_doc_id)).getText().toString();
             Reference<TransportDocument> transportDoc = Reference.to(transportDocStr);
@@ -141,8 +139,11 @@ public class EditorTransportCreateFragment extends Fragment {
             if (getActivity() == null)
                 return;
 
+            TypedValue mistakeColor = new TypedValue();
+            getActivity().getTheme().resolveAttribute(android.R.attr.colorError, mistakeColor, true);
+
             if (transportDocStr.isBlank()) {
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_transport_doc_id)).setHintTextColor(Color.argb(255, 255, 100, 100)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_transport_doc_id)).setHintTextColor(mistakeColor.data));
                 valid = false;
             }
 
@@ -152,7 +153,7 @@ public class EditorTransportCreateFragment extends Fragment {
             } catch (Exception e) {
                 Log.sendException(e);
                 valid = false;
-                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_transport_date)).setHintTextColor(Color.argb(255, 255, 100, 100)));
+                getActivity().runOnUiThread(() -> ((EditText) view.findViewById(R.id.et_transport_date)).setHintTextColor(mistakeColor.data));
             }
 
             if (!valid)

@@ -15,6 +15,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import de.ehealth.evek.api.entity.Address;
+import de.ehealth.evek.api.entity.Insurance;
 import de.ehealth.evek.api.entity.InsuranceData;
 import de.ehealth.evek.api.entity.Patient;
 import de.ehealth.evek.api.entity.ServiceProvider;
@@ -439,7 +440,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      */
     public TransportDocument updateTransportDocumentWithPatient(Id<TransportDocument> transportDocumentId,
                                                                 Reference<Patient>patient,
-                                                                Reference<InsuranceData> insuranceData,
+                                                                COptional<Reference<InsuranceData>> insuranceData,
                                                                 TransportReason transportReason,
                                                                 Date startDate,
                                                                 COptional<Date> endDate,
@@ -461,6 +462,49 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
     }
 
     /**
+     * Method to update the information and {@link Patient} of a {@link TransportDocument} with the given parameters
+     *
+     * @param transportDocumentId the {@link Id} of the {@link TransportDocument} to be edited
+     * @param patient the {@link Patient} that the {@link TransportDocument} should be assigned to
+     * @param insuranceData the {@link InsuranceData} to use for the {@link TransportDocument}
+     * @param transportReason the reason of the {@link TransportDocument}
+     * @param startDate the start {@link Date} of the {@link TransportDocument}
+     * @param endDate the end {@link Date} of the {@link TransportDocument}
+     * @param weeklyFrequency how many transports have to be made each week
+     * @param healthcareServiceProvider the {@link ServiceProvider} where the {@link Patient} is treated
+     * @param transportationType the type of the transportation (vehicle)
+     * @param additionalInfo additional information to be made for the {@link TransportDocument}
+     *
+     * @return {@link TransportDocument} - the updated {@link TransportDocument}
+     *
+     * @throws ProcessingException thrown, when the {@link TransportDocument} could not be created
+     */
+    public TransportDocument updateTransportDocumentWithPatient(Id<TransportDocument> transportDocumentId,
+                                                                Reference<Patient>patient,
+                                                                InsuranceData.Create insuranceData,
+                                                                TransportReason transportReason,
+                                                                Date startDate,
+                                                                COptional<Date> endDate,
+                                                                COptional<Integer> weeklyFrequency,
+                                                                Reference<ServiceProvider> healthcareServiceProvider,
+                                                                TransportationType transportationType,
+                                                                COptional<String> additionalInfo) throws ProcessingException {
+        try{
+            updateTransportDocument(transportDocumentId, transportReason, startDate,
+                    endDate, weeklyFrequency, healthcareServiceProvider, transportationType, additionalInfo);
+            sender.sendInsuranceData(insuranceData);
+            InsuranceData insData = receiver.receiveInsuranceData();
+            TransportDocument updated;
+            updated = assignTransportDocumentPatient(transportDocumentId, patient, COptional.of(Reference.to(insData.id().value())));
+            addTransportDocument(updated);
+            return updated;
+        }catch(Exception e){
+            Log.sendException(e);
+            throw new ProcessingException(e);
+        }
+    }
+
+    /**
      * Method to assign a {@link Patient} to a {@link TransportDocument}
      *
      * @param transportDocumentId the {@link Id} of the {@link TransportDocument} to be updated
@@ -473,9 +517,13 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
      */
     public TransportDocument assignTransportDocumentPatient(Id<TransportDocument> transportDocumentId,
                                                             Reference<Patient>patient,
-                                                            Reference<InsuranceData> insuranceData) throws ProcessingException{
+                                                            COptional<Reference<InsuranceData>> insuranceData) throws ProcessingException{
         try{
-            TransportDocument.AssignPatient cmd = new TransportDocument.AssignPatient(transportDocumentId, patient, insuranceData);
+            Reference<InsuranceData> id;
+            if(insuranceData.isPresent()) id = insuranceData.get();
+            else id = getPatient(patient.id()).insuranceData();
+
+            TransportDocument.AssignPatient cmd = new TransportDocument.AssignPatient(transportDocumentId, patient, id);
             ensureConnection();
             sender.sendTransportDocument(cmd);
             TransportDocument updated = receiver.receiveTransportDocument();
@@ -774,6 +822,125 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
     }
 
     /**
+     * Method to get a {@link Patient} by its {@link Id}
+     *
+     * @param insuranceNumber the {@link Id} of the {@link Patient} as {@link String}
+     *
+     * @return {@link Patient} - the {@link Patient} with the given {@link Id}
+     *
+     * @throws ProcessingException thrown, when the {@link Patient} could not be found
+     */
+    public Patient getPatient(String insuranceNumber) throws ProcessingException{
+        return getPatient(new Id<>(insuranceNumber));
+    }
+
+    /**
+     * Method to get a {@link Patient} by its {@link Id}
+     *
+     * @param insuranceNumber the {@link Id} of the {@link Patient}
+     *
+     * @return {@link Patient} - the {@link Patient} with the given {@link Id}
+     *
+     * @throws ProcessingException thrown, when the {@link Patient} could not be found
+     */
+    public Patient getPatient(Id<Patient> insuranceNumber) throws ProcessingException{
+        try {
+            ensureConnection();
+            sender.sendPatient(new Patient.Get(insuranceNumber));
+            return receiver.receivePatient();
+        }catch(Exception e){
+            Log.sendException(e);
+            throw new ProcessingException(e);
+        }
+    }
+
+    /**
+     * Method to get {@link InsuranceData Insurance Data} by the {@link Id} of the underlying {@link Patient}
+     *
+     * @param insuranceNumber the {@link Id} of the {@link Patient} as {@link String}
+     *
+     * @return {@link InsuranceData} - the {@link Patient Patient's} {@link InsuranceData Insurance Data}
+     *
+     * @throws ProcessingException thrown, when the {@link Patient} or {@link InsuranceData Insurance Data} could not be found
+     */
+    public InsuranceData getInsuranceDataByPatient(String insuranceNumber) throws ProcessingException{
+        return getInsuranceDataByPatient(new Id<>(insuranceNumber));
+    }
+
+    /**
+     * Method to get {@link InsuranceData Insurance Data} by the {@link Id} of the underlying {@link Patient}
+     *
+     * @param insuranceNumber the {@link Id} of the {@link Patient}
+     *
+     * @return {@link InsuranceData} - the {@link Patient Patient's} {@link InsuranceData Insurance Data}
+     *
+     * @throws ProcessingException thrown, when the {@link Patient} or {@link InsuranceData Insurance Data} could not be found
+     */
+    public InsuranceData getInsuranceDataByPatient(Id<Patient> insuranceNumber) throws ProcessingException{
+        try {
+            Patient patient = getPatient(insuranceNumber);
+            sender.sendInsuranceData(new InsuranceData.Get(patient.insuranceData().id()));
+            return receiver.receiveInsuranceData();
+        }catch(Exception e){
+            Log.sendException(e);
+            throw new ProcessingException(e);
+        }
+    }
+
+    /**
+     * Method to get {@link InsuranceData Insurance Data} by its {@link Id}
+     *
+     * @param insuranceDataId the {@link Id} of the {@link InsuranceData Insurance Data} as {@link String}
+     *
+     * @return {@link InsuranceData} - the {@link Patient Patient's} {@link InsuranceData Insurance Data}
+     *
+     * @throws ProcessingException thrown, when the {@link InsuranceData Insurance Data} could not be found
+     */
+    public InsuranceData getInsuranceData(String insuranceDataId) throws ProcessingException{
+        return getInsuranceDataByPatient(new Id<>(insuranceDataId));
+    }
+
+    /**
+     * Method to get {@link InsuranceData Insurance Data} by its {@link Id}
+     *
+     * @param insuranceDataId the {@link Id} of the {@link InsuranceData Insurance Data}
+     *
+     * @return {@link InsuranceData} - the {@link Patient Patient's} {@link InsuranceData Insurance Data}
+     *
+     * @throws ProcessingException thrown, when the {@link InsuranceData Insurance Data} could not be found
+     */
+    public InsuranceData getInsuranceData(Id<InsuranceData> insuranceDataId) throws ProcessingException{
+        try {
+            sender.sendInsuranceData(new InsuranceData.Get(insuranceDataId));
+            return receiver.receiveInsuranceData();
+        }catch(Exception e){
+            Log.sendException(e);
+            throw new ProcessingException(e);
+        }
+    }
+
+    /**
+     * Method to create {@link InsuranceData Insurance Data} for a {@link Patient}
+     *
+     * @param patient the patient the {@link InsuranceData Insurance Data} should be created for
+     * @param insurance the {@link Insurance} to assign
+     * @param insuranceStatus the insurance status
+     *
+     * @return {@link InsuranceData} - the created {@link InsuranceData Insurance Data}
+     *
+     * @throws ProcessingException thrown, when the {@link InsuranceData Insurance Data} could not be found
+     */
+    public InsuranceData createInsuranceData(Reference<Patient> patient, Reference<Insurance> insurance, int insuranceStatus) throws ProcessingException {
+        try {
+            sender.sendInsuranceData(new InsuranceData.Create(patient, insurance, insuranceStatus));
+            return receiver.receiveInsuranceData();
+        }catch(Exception e){
+            Log.sendException(e);
+            throw new ProcessingException(e);
+        }
+    }
+
+    /**
      * Method to get an {@link Address} by its {@link Id}
      *
      * @param addressId the {@link Id} of the {@link Address} as {@link String}
@@ -925,6 +1092,9 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         }).start();
     }
 
+    /**
+     * Method to try to re-login with the previously logged in user
+     */
     private boolean tryReLogin(){
         Throwable t = new WrongCredentialsException();
         try {

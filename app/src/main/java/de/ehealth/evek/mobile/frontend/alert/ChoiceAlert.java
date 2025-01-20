@@ -55,6 +55,36 @@ public class ChoiceAlert extends DialogFragment {
                 .setOnDismissListener((dialog) -> AlertHandler.dismiss()));
     }
 
+    /**
+     * Class used to create a ChoiceAlert with two custom {@link Button}'s.<br>
+     * Constructor creating a new ChoiceDialog.
+     *
+     * @param title title for the {@link Dialog} to show
+     * @param message message for the {@link Dialog} to show
+     * @param buttonLeftText text for the left {@link Button} to show
+     * @param buttonLeftListener listener for the left {@link Button} to call on click
+     * @param buttonCenterText text for the center {@link Button} to show
+     * @param buttonCenterListener listener for the center {@link Button} to call on click
+     * @param buttonRightText text for the right {@link Button} to show
+     * @param buttonRightListener listener for the right {@link Button} to call on click
+     */
+    private ChoiceAlert(String title, String message,
+                        String buttonLeftText, DialogInterface.OnClickListener buttonLeftListener,
+                        String buttonCenterText, DialogInterface.OnClickListener buttonCenterListener,
+                        String buttonRightText, DialogInterface.OnClickListener buttonRightListener){
+
+        if(AlertHandler.getCurrentDialog() != null)
+            AlertHandler.dismiss();
+
+        AlertHandler.setCurrent(new AlertDialog.Builder(ClientMain.instance().getContext())
+                .setTitle(title)
+                .setMessage(message)
+                .setNegativeButton(buttonLeftText,buttonLeftListener)
+                .setNeutralButton(buttonCenterText,buttonCenterListener)
+                .setPositiveButton(buttonRightText,buttonRightListener)
+                .setOnDismissListener((dialog) -> AlertHandler.dismiss()));
+    }
+
     @NonNull
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState){
@@ -82,7 +112,32 @@ public class ChoiceAlert extends DialogFragment {
                                   String buttonRightText, DialogInterface.OnClickListener buttonRightListener) {
         try {
             ChoiceAlert alert = new ChoiceAlert(title, message, buttonLeftText, buttonLeftListener, buttonRightText, buttonRightListener);
-            alert.show(fragmentManager, "exception_dialog");
+            alert.show(fragmentManager, "choice_dialog");
+        } catch (NullPointerException ex) {
+            Log.sendException(ex);
+        }
+    }
+
+    /**
+     * Method used to create and show a new {@link Dialog} with the given properties.
+     *
+     * @param fragmentManager {@link FragmentManager} to call the {@link Dialog} from
+     * @param title title for the {@link Dialog} to show
+     * @param message message for the {@link Dialog} to show
+     * @param buttonLeftText text for the left {@link Button} to show
+     * @param buttonLeftListener listener for the left {@link Button} to call on click
+     * @param buttonCenterText text for the center {@link Button} to show
+     * @param buttonCenterListener listener for the center {@link Button} to call on click
+     * @param buttonRightText text for the right {@link Button} to show
+     * @param buttonRightListener listener for the right {@link Button} to call on click
+     */
+    public static void showDialog(FragmentManager fragmentManager, String title, String message,
+                                  String buttonLeftText, DialogInterface.OnClickListener buttonLeftListener,
+                                  String buttonCenterText, DialogInterface.OnClickListener buttonCenterListener,
+                                  String buttonRightText, DialogInterface.OnClickListener buttonRightListener) {
+        try {
+            ChoiceAlert alert = new ChoiceAlert(title, message, buttonLeftText, buttonLeftListener, buttonCenterText, buttonCenterListener, buttonRightText, buttonRightListener);
+            alert.show(fragmentManager, "choice_dialog");
         } catch (NullPointerException ex) {
             Log.sendException(ex);
         }

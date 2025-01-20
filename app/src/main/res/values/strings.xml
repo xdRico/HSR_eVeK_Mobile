@@ -54,6 +54,8 @@
     <string name="hint_fragment_editor_transport_doc_et_weekly_frequency">Fahrten pro Woche</string>
     <string name="hint_fragment_editor_transport_doc_tv_service_provider">Behandlungsstätte</string>
     <string name="hint_fragment_editor_transport_doc_et_info">Weitere Informationen</string>
+    <string name="hint_fragment_editor_transport_doc_et_ik_number">IK-Nummer</string>
+    <string name="hint_fragment_editor_transport_doc_et_insurance_status">Vers.-status</string>
 
     <!-- Strings for TransportCreateEditor -->
     <string name="content_fragment_editor_transport_create_tv_transport_data">Transportdaten</string>
@@ -101,4 +103,7 @@
     <string name="second_fragment_label">Second Fragment</string>
     <string name="next">Next</string>
     <string name="previous">Previous</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="content_fragment_editor_transport_doc_sw_keep_insurance_data">Versichertendaten\nübernehmen</string>
 </resources>

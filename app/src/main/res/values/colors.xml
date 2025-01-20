@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="text_light">#FFC9C9C9</color>
+    <color name="hint_light">#FFA6A6A6</color>
+    <color name="text_dark">#FF252525</color>
+    <color name="hint_dark">#FF383838</color>
+    <color name="primary">#FF00BBDD</color>
+    <color name="mistake">#FFCC2222</color>
     <color name="design_evek_background_error">#99FF4444</color>
 </resources>

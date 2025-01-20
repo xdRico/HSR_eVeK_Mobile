@@ -19,7 +19,7 @@
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraint_patient_data"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="match_parent"
                 android:layout_marginTop="30dp"
                 android:paddingStart="30dp"
                 android:paddingEnd="30dp">
@@ -47,7 +47,51 @@
                     android:textAlignment="center"
                     app:layout_constraintStart_toStartOf="@+id/tv_transport_data"
                     app:layout_constraintTop_toBottomOf="@+id/tv_transport_data"
+                    tools:ignore="TextFields"
+                    tools:layout_editor_absoluteX="30dp" />
+
+                <EditText
+                    android:id="@+id/et_ik_number"
+                    android:layout_width="140dp"
+                    android:layout_height="50dp"
+                    android:editable="false"
+                    android:ems="10"
+                    android:enabled="false"
+                    android:hint="@string/hint_fragment_editor_transport_doc_et_ik_number"
+                    android:importantForAutofill="no"
+                    android:inputType="text|textShortMessage|textCapCharacters"
+                    android:maxLength="10"
+                    android:textAlignment="center"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/et_insurance_number"
                     tools:ignore="TextFields" />
+
+                <EditText
+                    android:id="@+id/et_insurance_status"
+                    android:layout_width="140dp"
+                    android:layout_height="50dp"
+                    android:editable="false"
+                    android:ems="10"
+                    android:enabled="false"
+                    android:hint="@string/hint_fragment_editor_transport_doc_et_insurance_status"
+                    android:importantForAutofill="no"
+                    android:inputType="number"
+                    android:maxLength="10"
+                    android:textAlignment="center"
+                    app:layout_constraintStart_toEndOf="@+id/et_insurance_number"
+                    app:layout_constraintTop_toBottomOf="@+id/tv_transport_data"
+                    tools:ignore="TextFields" />
+
+                <Switch
+                    android:id="@+id/sw_keep_insurance_data"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:checked="true"
+                    android:text="@string/content_fragment_editor_transport_doc_sw_keep_insurance_data"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/et_ik_number"
+                    app:layout_constraintTop_toBottomOf="@+id/et_insurance_status" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -240,23 +284,6 @@
             </androidx.constraintlayout.widget.ConstraintLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/constraint_save"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:paddingStart="30dp"
-                android:paddingEnd="30dp">
-
-                <Button
-                    android:id="@+id/btn_save_transportdoc"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/content_fragment_editor_transport_doc_btn_save_transport_doc"
-                    app:layout_constraintEnd_toEndOf="@+id/constraint_save"
-                    app:layout_constraintStart_toStartOf="@+id/constraint_save"
-                    app:layout_constraintTop_toTopOf="@+id/constraint_save" />
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-            <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/constraint_edit"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -274,6 +301,24 @@
                     app:layout_constraintTop_toTopOf="@+id/constraint_edit"
                     tools:layout_editor_absoluteX="30dp" />
             </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/constraint_save"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp">
+
+                <Button
+                    android:id="@+id/btn_save_transportdoc"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/content_fragment_editor_transport_doc_btn_save_transport_doc"
+                    app:layout_constraintEnd_toEndOf="@+id/constraint_save"
+                    app:layout_constraintStart_toStartOf="@+id/constraint_save"
+                    app:layout_constraintTop_toTopOf="@+id/constraint_save" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

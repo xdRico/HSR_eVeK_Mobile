@@ -17,12 +17,12 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.EVeKMobile"
+        android:theme="@style/Base.Theme.evekMobile"
         tools:targetApi="31">
         <activity
             android:name=".core.MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.EVeKMobile">
+            android:theme="@style/Base.Theme.evekMobile">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

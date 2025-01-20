@@ -1,9 +1,10 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.EVeKMobile" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Base.Theme.evekMobile" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="android:textColorPrimary">@color/text_dark</item>
+        <item name="android:textColorHint">@color/hint_dark</item>
+        <item name="colorError">@color/mistake</item>
     </style>
-
-    <style name="Theme.EVeKMobile" parent="Base.Theme.EVeKMobile" ></style>
 </resources>

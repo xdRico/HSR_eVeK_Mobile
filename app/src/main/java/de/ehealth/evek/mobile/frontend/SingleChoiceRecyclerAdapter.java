@@ -1,7 +1,7 @@
 package de.ehealth.evek.mobile.frontend;
 
 import android.content.Context;
-import android.graphics.Color;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +29,7 @@ import de.ehealth.evek.mobile.network.DataHandler;
 public class SingleChoiceRecyclerAdapter<T> extends RecyclerView.Adapter<SingleChoiceRecyclerAdapter.ViewHolder>{
 
     private boolean setup = false;
+    private final Context context;
     private T toSetActive = null;
     private final Class<T> t;
     private final List<T> mData;
@@ -46,6 +47,7 @@ public class SingleChoiceRecyclerAdapter<T> extends RecyclerView.Adapter<SingleC
      */
     SingleChoiceRecyclerAdapter(Context context, List<T> data, Class<T> typeClass) {
         this.mInflater = LayoutInflater.from(context);
+        this.context = context;
         this.mData = data;
         t = typeClass;
     }
@@ -163,8 +165,13 @@ public class SingleChoiceRecyclerAdapter<T> extends RecyclerView.Adapter<SingleC
      * @param valid if the {@link CheckBox CheckBoxes} are valid
      */
     void setValid(boolean valid){
+        TypedValue textColor = new TypedValue();
+        TypedValue mistakeColor = new TypedValue();
+        context.getTheme().resolveAttribute(android.R.attr.textColorPrimary, textColor, true);
+        context.getTheme().resolveAttribute(android.R.attr.colorError, mistakeColor, true);
+
         for(CheckBox box : checkBoxes)
-            box.setTextColor(valid ? Color.argb(255, 0, 0, 0) : Color.argb(255, 255, 100, 100));
+            box.setTextColor(valid ? textColor.data : mistakeColor.data);
     }
 
     /**

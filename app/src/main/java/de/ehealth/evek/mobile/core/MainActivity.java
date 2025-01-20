@@ -5,7 +5,6 @@ import android.os.Bundle;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import androidx.navigation.NavController;
@@ -364,15 +363,7 @@ public class MainActivity extends AppCompatActivity {
      */
     public void choiceAlert(String title, String message, String buttonLeftText, DialogInterface.OnClickListener buttonLeftListener,
                             String buttonCenterText, DialogInterface.OnClickListener buttonCenterListener, String buttonRightText, DialogInterface.OnClickListener buttonRightListener) {
-        runOnUiThread(() -> {
-            //TODO
-            AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-            builder.setTitle(title);
-            builder.setMessage(message);
-            builder.setNegativeButton(buttonLeftText, buttonLeftListener);
-            builder.setNeutralButton(buttonCenterText, buttonCenterListener);
-            builder.setPositiveButton(buttonRightText, buttonRightListener);
-            builder.show();
-        });
+        runOnUiThread(() -> ChoiceAlert.showDialog(getSupportFragmentManager(), title, message, buttonLeftText, buttonLeftListener, buttonCenterText, buttonCenterListener, buttonRightText, buttonRightListener));
+
     }
 }

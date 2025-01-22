@@ -941,6 +941,39 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
     }
 
     /**
+     * Method to get an {@link ServiceProvider Service Provider} by its {@link Id}
+     *
+     * @param serviceProviderId the {@link Id} of the {@link ServiceProvider Service Provider} as {@link String}
+     *
+     * @return {@link ServiceProvider Service Provider} - the {@link ServiceProvider Service Provider} with the given {@link Id}
+     *
+     * @throws ProcessingException thrown, when the {@link ServiceProvider Service Provider} could not be found
+     */
+    public ServiceProvider getServiceProviderById(String serviceProviderId) throws ProcessingException {
+        return getServiceProviderById(new Id<>(serviceProviderId));
+    }
+
+    /**
+     * Method to get an {@link ServiceProvider Service Provider} by its {@link Id}
+     *
+     * @param serviceProviderId the {@link Id} of the {@link ServiceProvider Service Provider}
+     *
+     * @return {@link ServiceProvider Service Provider} - the {@link ServiceProvider Service Provider} with the given {@link Id}
+     *
+     * @throws ProcessingException thrown, when the {@link ServiceProvider Service Provider} could not be found
+     */
+    public ServiceProvider getServiceProviderById(Id<ServiceProvider> serviceProviderId) throws ProcessingException {
+        try {
+            ensureConnection();
+            sender.sendServiceProvider(new ServiceProvider.Get(serviceProviderId));
+            return receiver.receiveServiceProvider();
+        }catch(Exception e){
+            Log.sendException(e);
+            throw new ProcessingException(e);
+        }
+    }
+
+    /**
      * Method to get an {@link Address} by its {@link Id}
      *
      * @param addressId the {@link Id} of the {@link Address} as {@link String}

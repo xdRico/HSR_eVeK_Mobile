@@ -9,7 +9,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
-import android.widget.Switch;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -367,7 +366,7 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
             if(!patStr.isBlank()) {
                 patient = COptional.of(Reference.to(patStr));
 
-                if (!((Switch) view.findViewById(R.id.sw_keep_insurance_data)).isChecked()) {
+                if (!((MaterialSwitch) view.findViewById(R.id.sw_keep_insurance_data)).isChecked()) {
                     if (!insStatusStr.isBlank()) {
                         try {
                             int status = Integer.parseInt(insStatusStr);

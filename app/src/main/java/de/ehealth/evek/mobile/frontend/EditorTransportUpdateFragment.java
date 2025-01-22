@@ -24,6 +24,7 @@ import java.util.Arrays;
 import java.util.Locale;
 
 import de.ehealth.evek.api.entity.Address;
+import de.ehealth.evek.api.entity.Patient;
 import de.ehealth.evek.api.entity.TransportDetails;
 import de.ehealth.evek.api.entity.TransportDocument;
 import de.ehealth.evek.api.exception.IllegalProcessException;
@@ -126,11 +127,60 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
             view.findViewById(R.id.ll_patient_signature).setVisibility(patientValidation ? View.VISIBLE : View.GONE);
         }
 
+        EditText startStreet = view.findViewById(R.id.et_address_start_street);
+        EditText startHouse = view.findViewById(R.id.et_address_start_housenumber);
+        EditText startZip = view.findViewById(R.id.et_address_start_zipcode);
+        EditText startCity = view.findViewById(R.id.et_address_start_city);
+
+        EditText endStreet = view.findViewById(R.id.et_address_end_street);
+        EditText endHouse = view.findViewById(R.id.et_address_end_housenumber);
+        EditText endZip = view.findViewById(R.id.et_address_end_zipcode);
+        EditText endCity = view.findViewById(R.id.et_address_end_city);
+        //TODO country
+
+        view.findViewById(R.id.tb_direction).setOnClickListener((v) -> {
+
+            String tStreet = startStreet.getText().toString();
+            String tHouse = startHouse.getText().toString();
+            String tZip = startZip.getText().toString();
+            String tCity = startCity.getText().toString();
+            //TODO country
+
+            startStreet.setText(endStreet.getText().toString());
+            startHouse.setText(endHouse.getText().toString());
+            startZip.setText(endZip.getText().toString());
+            startCity.setText(endCity.getText().toString());
+
+            endStreet.setText(tStreet);
+            endHouse.setText(tHouse);
+            endZip.setText(tZip);
+            endCity.setText(tCity);
+            //TODO country
+        });
+
         DataHandler handler = DataHandler.instance();
         handler.runOnNetworkThread(() -> {
             try{
                 TransportDetails transport = handler.getTransportDetailsById(transportID.value());
+                TransportDocument document;
+                Patient patient;
+                Address providerAddress = null;
+                Address patientAddress = null;
+                try {
+                    document = handler.getTransportDocumentById(transport.transportDocument().id());
+                    try{
+                        if(document.patient().isPresent()) {
+                            patient = handler.getPatient(document.patient().get().id());
+                            patientAddress = handler.getAddressById(patient.address().id());
+                        }
+                    }catch(Exception e){
+                        Log.sendException(e);
+                    }
+                    providerAddress = handler.getAddressById(handler.getServiceProviderById(document.healthcareServiceProvider().id()).address().id());
 
+                }catch (Exception e){
+                    Log.sendException(e);
+                }
                 view.findViewById(R.id.btn_transport_doc).setOnClickListener((v) -> {
                     NavController navController = NavHostFragment.findNavController(EditorTransportUpdateFragment.this);
                     Bundle bundle = new Bundle();
@@ -148,6 +198,8 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
                 if(getActivity() == null)
                     return;
 
+                Address finalPatientAddress = patientAddress;
+                Address finalProviderAddress = providerAddress;
                 getActivity().runOnUiThread(() -> {
 
                     ((EditText) view.findViewById(R.id.et_transport_date)).setText(new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(transport.transportDate().getTime()));
@@ -159,19 +211,29 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
                         ((ToggleButton) view.findViewById(R.id.tb_direction)).setChecked(transport.direction().get() == Direction.Outward);
 
                     if(startAddress.isPresent()){
-                        ((EditText) view.findViewById(R.id.et_address_start_street)).setText(startAddress.get().streetName());
-                        ((EditText) view.findViewById(R.id.et_address_start_housenumber)).setText(startAddress.get().houseNumber());
-                        ((EditText) view.findViewById(R.id.et_address_start_zipcode)).setText(startAddress.get().postCode());
-                        ((EditText) view.findViewById(R.id.et_address_start_city)).setText(startAddress.get().city());
+                        startStreet.setText(startAddress.get().streetName());
+                        startHouse.setText(startAddress.get().houseNumber());
+                        startZip.setText(startAddress.get().postCode());
+                        startCity.setText(startAddress.get().city());
                         //TODO country
+                    }else if(finalPatientAddress != null){
+                        startStreet.setText(finalPatientAddress.streetName());
+                        startHouse.setText(finalPatientAddress.houseNumber());
+                        startZip.setText(finalPatientAddress.postCode());
+                        startCity.setText(finalPatientAddress.city());
                     }
 
                     if(endAddress.isPresent()){
-                        ((EditText) view.findViewById(R.id.et_address_end_street)).setText(endAddress.get().streetName());
-                        ((EditText) view.findViewById(R.id.et_address_end_housenumber)).setText(endAddress.get().houseNumber());
-                        ((EditText) view.findViewById(R.id.et_address_end_zipcode)).setText(endAddress.get().postCode());
-                        ((EditText) view.findViewById(R.id.et_address_end_city)).setText(endAddress.get().city());
+                        endStreet.setText(endAddress.get().streetName());
+                        endHouse.setText(endAddress.get().houseNumber());
+                        endZip.setText(endAddress.get().postCode());
+                        endCity.setText(endAddress.get().city());
                         //TODO country
+                    }else if(finalProviderAddress != null){
+                        endStreet.setText(finalProviderAddress.streetName());
+                        endHouse.setText(finalProviderAddress.houseNumber());
+                        endZip.setText(finalProviderAddress.postCode());
+                        endCity.setText(finalProviderAddress.city());
                     }
 
                     if(transport.patientCondition().isPresent())

@@ -15,10 +15,9 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.ehealth.evek.api.entity.ServiceProvider;
 import de.ehealth.evek.api.entity.TransportDetails;
+import de.ehealth.evek.api.entity.TransportDocument;
 import de.ehealth.evek.api.exception.ProcessingException;
-import de.ehealth.evek.api.type.Id;
 import de.ehealth.evek.api.util.Log;
 import de.ehealth.evek.mobile.R;
 import de.ehealth.evek.mobile.core.MainActivity;
@@ -59,17 +58,19 @@ public class MainPageUserFragment extends Fragment implements TransportRecyclerA
 
         handler.runOnNetworkThread(() -> {
 
-            List<TransportRecyclerAdapter.TransportDetailsWithServiceProvider> detailsWithSP = new ArrayList<>();
-
+            List<TransportRecyclerAdapter.TransportDetailsWithTransportDocument> detailsWithSP = new ArrayList<>();
+            Exception invalid = null;
             for(TransportDetails detail : handler.getTransportDetails()){
                 try{
-                    Id<ServiceProvider> serviceProviderId = handler.getTransportDocumentById(detail.transportDocument().id()).healthcareServiceProvider().id();
-                    detailsWithSP.add(new TransportRecyclerAdapter.TransportDetailsWithServiceProvider(detail, serviceProviderId));
+                    TransportDocument transportDocument = handler.getTransportDocumentById(detail.transportDocument().id());
+                    detailsWithSP.add(new TransportRecyclerAdapter.TransportDetailsWithTransportDocument(detail, transportDocument));
                 }catch(ProcessingException e){
                     Log.sendMessage("TransportDocument not found!");
-                    detailsWithSP.add(new TransportRecyclerAdapter.TransportDetailsWithServiceProvider(detail, new Id<>("No valid service provider!")));
+                    invalid = e;
                 }
             }
+            if(invalid != null && getActivity() != null)
+                ((MainActivity) getActivity()).exceptionAlert("Fehler beim Laden von mindestens einem Transport!", invalid);
 
             TransportRecyclerAdapter transportAdapter = new TransportRecyclerAdapter(getActivity(), detailsWithSP);
             transportAdapter.setClickListener(this);
@@ -90,19 +91,21 @@ public class MainPageUserFragment extends Fragment implements TransportRecyclerA
         bundle.putString("transportID", obj.id().value());
         DataHandler handler = DataHandler.instance();
         handler.runOnNetworkThread(() -> {
-            if(obj.transportProvider().get().id().value().equalsIgnoreCase(
-                    handler.getUser().serviceProvider().id().value())) {
+        if(obj.transportProvider().get().id().value().equalsIgnoreCase(
+                handler.getUser().serviceProvider().id().value())){
+            if(obj.transporterSignature().isPresent() && obj.transporterSignatureDate().isPresent()){
+                if(obj.patientSignature().isPresent() && obj.patientSignatureDate().isPresent())
+                    bundle.putBoolean("finished", true);
+                    //((MainActivity) getActivity()).informationAlert(getString(R.string.title_popup_illegal_operation), getString(R.string.content_popup_transport_already_signed));
+                else
+                    bundle.putBoolean("validation", true);
 
-                if(obj.transporterSignature().isPresent() && obj.transporterSignatureDate().isPresent()){
-                    if(obj.patientSignature().isPresent() && obj.patientSignatureDate().isPresent())
-                        ((MainActivity) getActivity()).informationAlert(getString(R.string.title_popup_illegal_operation), getString(R.string.content_popup_transport_already_signed));
-                    else
-                        getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageUserFragment_to_patientSignatureFragment, bundle));
-                }else{
-                    getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageUserFragment_to_editorTransportUpdateFragment, bundle));
-                }
-            } else
-                ((MainActivity) getActivity()).informationAlert(getString(R.string.title_popup_illegal_operation), getString(R.string.content_popup_transport_already_assigned));
+                getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageUserFragment_to_editorTransportUpdateFragment, bundle));
+            }else{
+                getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageUserFragment_to_editorTransportUpdateFragment, bundle));
+            }
+        } else
+            ((MainActivity) getActivity()).informationAlert(getString(R.string.title_popup_illegal_operation), getString(R.string.content_popup_transport_already_assigned));
         });
     }
 

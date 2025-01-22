@@ -69,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
 
         } else navController.setGraph(R.navigation.nav_graph);
 
-
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             setQRScanEnabled(destination.getId() == R.id.mainPageDoctorFragment || destination.getId() == R.id.mainPageUserFragment);
             setNavigation(destination.getId() == R.id.loginUserFragment || destination.getId() == R.id.loadingConnectionFragment);
@@ -81,7 +80,12 @@ public class MainActivity extends AppCompatActivity {
         }catch (IllegalStateException e){
             Log.sendException(e);
         }
-        setQRScanEnabled(false);
+        if(navController.getCurrentDestination() != null) {
+            int current = navController.getCurrentDestination().getId();
+            setNavigation(current != R.id.loadingConnectionFragment && current != R.id.loginUserFragment);
+            setQRScanEnabled(current == R.id.mainPageDoctorFragment || current == R.id.mainPageUserFragment);
+        }
+
     }
 
     @Override
@@ -108,6 +112,10 @@ public class MainActivity extends AppCompatActivity {
                 navGraphName = "nav_graph_doctor";
             } else if (graphId == R.id.nav_graph_user) {
                 navGraphName = "nav_graph_user";
+                if(navController.getCurrentDestination() != null
+                        && navController.getCurrentDestination().getId() == R.id.mainPageUserFragment)
+                    setQRScanEnabled(true);
+                setNavigation(true);
             } else {
                 navGraphName = "nav_graph";
             }
@@ -159,16 +167,18 @@ public class MainActivity extends AppCompatActivity {
                         previousId == R.id.loadingConnectionFragment)
                     return false;
 
-            }else if(navController.getGraph().getId() == R.id.nav_graph_doctor){
+            }else if(navController.getGraph().getId() == R.id.nav_graph_doctor
+                    || navController.getGraph().getId() == R.id.nav_graph_user){
                 int currentId = navController.getCurrentDestination().getId();
 
-                while(currentId != R.id.mainPageDoctorFragment)
-                    try{
-                        navController.navigateUp();
-                        currentId = navController.getCurrentDestination().getId();
-                    }catch(Exception e){
-                        break;
-                    }
+                if(!(currentId == R.id.editorTransportDocumentFragment && previousId == R.id.editorTransportUpdateFragment))
+                    while(currentId != R.id.mainPageDoctorFragment && currentId != R.id.mainPageUserFragment)
+                        try{
+                            navController.navigateUp();
+                            currentId = navController.getCurrentDestination().getId();
+                        }catch(Exception e){
+                            break;
+                        }
             }
         }
         try {
@@ -180,6 +190,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Method to reset the Application and reload
+     */
     public void reset(){
         NavController controller = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
         runOnUiThread(() -> controller.setGraph(controller.getNavInflater().inflate(R.navigation.nav_graph)));

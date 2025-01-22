@@ -47,7 +47,7 @@ public class TransportDocumentRecyclerAdapter extends RecyclerView.Adapter<Trans
     @Override
     public void onBindViewHolder(@NonNull TransportDocumentRecyclerAdapter.ViewHolder holder, int position) {
         TransportDocument document = mData.get(position);
-        String patient = document.patient().isPresent() ? document.patient().get().id().value() : "No Patient assigned!";
+        String patient = document.patient().isPresent() ? document.patient().get().id().value() : "Kein Patient zugewiesen!";
         String serviceProvider = document.healthcareServiceProvider().id().value();
         holder.document = document;
         holder.patient.setText(patient);

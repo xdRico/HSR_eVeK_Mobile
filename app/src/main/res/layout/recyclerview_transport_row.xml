@@ -7,6 +7,13 @@
 
 
     <TextView
+        android:id="@+id/tv_patient"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
         android:id="@+id/tv_transport_document"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

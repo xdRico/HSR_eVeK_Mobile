@@ -48,7 +48,11 @@
     <string name="content_fragment_editor_transport_doc_tv_patient_condition_info">Patientenzustand:</string>
     <string name="content_fragment_editor_transport_doc_btn_save_transport_doc">Speichern</string>
     <string name="content_fragment_editor_transport_doc_btn_edit_transport_doc">Bearbeiten</string>
+    <string name="content_fragment_editor_transport_doc_sw_keep_insurance_data">Versichertendaten\nübernehmen</string>
+    <string name="content_fragment_editor_transport_doc_btn_back_transport_update">Zurück</string>
     <string name="hint_fragment_editor_transport_doc_et_insurance_number">Vers.-nummer</string>
+    <string name="hint_fragment_editor_transport_doc_et_name">Name</string>
+    <string name="hint_fragment_editor_transport_doc_et_birthdate">Geburtsdatum</string>
     <string name="hint_fragment_editor_transport_doc_et_start_date">Startdatum</string>
     <string name="hint_fragment_editor_transport_doc_et_end_date">Enddatum</string>
     <string name="hint_fragment_editor_transport_doc_et_weekly_frequency">Fahrten pro Woche</string>
@@ -74,13 +78,14 @@
     <string name="content_fragment_editor_transport_update_tv_payment_exemption">Zuzahlungsbefreiung</string>
     <string name="content_fragment_editor_transport_update_cb_payment_exemption">Gültiger Zuzahlungsbefreiungsausweis für den Zeitraum der Krankenbeförderung wurde vorgelegt</string>
     <string name="content_fragment_editor_transport_update_tv_signature_transporter">Unterschrift Transportdienstleister</string>
-    <string name="desc_fragment_editor_transport_ib_delete_signature_transporter">Entfernt die gesetzte Unterschrift</string>
+    <string name="content_fragment_editor_transport_update_tv_signature_patient">Unterschrift Patient</string>
+    <string name="content_fragment_editor_transport_update_btn_transport_document">Transportschein</string>
+    <string name="desc_fragment_editor_transport_ib_delete_signature">Entfernt die gesetzte Unterschrift</string>
     <string name="hint_fragment_editor_transport_update_et_tour_number">Auftragsnummer</string>
     <string name="hint_fragment_editor_transport_update_et_address_street">Straße</string>
     <string name="hint_fragment_editor_transport_update_et_address_house_number">Nr.</string>
     <string name="hint_fragment_editor_transport_update_et_address_zip_code">PLZ</string>
     <string name="hint_fragment_editor_transport_update_et_address_city">Stadt</string>
-
 
     <!-- Strings for TransportAssign -->
     <string name="content_fragment_assign_transport_btn_self_assign">Selbst zuweisen</string>
@@ -95,15 +100,8 @@
     <string name="content_recyclerview_transport_row_tv_date_info">Datum:</string>
     <string name="content_recyclerview_transport_row_tv_transport_provider">Transportdienstleister:</string>
 
-
+    <!-- Strings for popups -->
     <string name="title_popup_illegal_operation">Ungültiger Vorgang!</string>
     <string name="content_popup_transport_already_assigned">Der Transport wurde bereits einem anderen Transportdienstleister zugefügt!</string>
     <string name="content_popup_transport_already_signed">Der Transport wurde bereits unterschrieben!</string>
-
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="content_fragment_editor_transport_doc_sw_keep_insurance_data">Versichertendaten\nübernehmen</string>
 </resources>

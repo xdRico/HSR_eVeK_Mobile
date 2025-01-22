@@ -23,9 +23,6 @@
         <action
             android:id="@+id/action_mainPageDoctorFragment_to_assignTransportFragment"
             app:destination="@id/assignTransportFragment" />
-        <action
-            android:id="@+id/action_mainPageDoctorFragment_to_patientSignatureFragment"
-            app:destination="@id/patientSignatureFragment" />
     </fragment>
     <fragment
         android:id="@+id/editorTransportDocumentFragment"
@@ -60,12 +57,7 @@
         android:label="e-VeK - Transport"
         tools:layout="@layout/fragment_editor_transport_update">
         <action
-            android:id="@+id/action_editorTransportUpdateFragment_to_patientSignatureFragment"
-            app:destination="@id/patientSignatureFragment" />
+            android:id="@+id/action_editorTransportUpdateFragment_to_editorTransportDocumentFragment"
+            app:destination="@id/editorTransportDocumentFragment" />
     </fragment>
-    <fragment
-        android:id="@+id/patientSignatureFragment"
-        android:name="de.ehealth.evek.mobile.frontend.PatientSignatureFragment"
-        android:label="e-VeK - Validieren"
-        tools:layout="@layout/fragment_patient_signature" />
 </navigation>

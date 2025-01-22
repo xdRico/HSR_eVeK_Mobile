@@ -31,6 +31,13 @@
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
+            <Button
+                android:id="@+id/btn_transport_doc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/content_fragment_editor_transport_update_btn_transport_document" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -249,6 +256,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:layout_marginBottom="8dp"
                 android:orientation="vertical">
 
                 <TextView
@@ -277,10 +285,51 @@
                         android:id="@+id/ib_delete_signature_transporter"
                         android:layout_width="64dp"
                         android:layout_height="64dp"
-                        android:contentDescription="@string/desc_fragment_editor_transport_ib_delete_signature_transporter"
+                        android:contentDescription="@string/desc_fragment_editor_transport_ib_delete_signature"
                         android:src="@drawable/baseline_delete_outline_48"
                         app:layout_constraintEnd_toEndOf="@+id/sp_transporter"
                         app:layout_constraintTop_toBottomOf="@+id/sp_transporter" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ll_patient_signature"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tv_signature_patient"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/content_fragment_editor_transport_update_tv_signature_patient"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
+
+                    <se.warting.signatureview.views.SignaturePad
+                        android:id="@+id/sp_patient"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+
+                        android:background="#B8B8B8"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <ImageButton
+                        android:id="@+id/ib_delete_signature_patient"
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
+                        android:contentDescription="@string/desc_fragment_editor_transport_ib_delete_signature"
+                        android:src="@drawable/baseline_delete_outline_48"
+                        app:layout_constraintEnd_toEndOf="@+id/sp_patient"
+                        app:layout_constraintTop_toBottomOf="@+id/sp_patient" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
             </LinearLayout>

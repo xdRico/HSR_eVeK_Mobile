@@ -18,6 +18,8 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.materialswitch.MaterialSwitch;
+
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -51,6 +53,7 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
     private SingleChoiceRecyclerAdapter<TransportReason> transportReasonAdapter;
     private SingleChoiceRecyclerAdapter<TransportationType> transportationTypeAdapter;
     private Id<TransportDocument> transportDocument = null;
+    private Boolean validation = false;
     private Boolean editPatient = false;
     private TransportReason reason = null;
     private TransportationType type = null;
@@ -68,6 +71,7 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
                     && !transportDocID.isBlank())
                 this.transportDocument = new Id<>(transportDocID);
             this.editPatient = getArguments().getBoolean("editPatientData");
+            this.validation = getArguments().getBoolean("validation");
 
         }
     }
@@ -97,8 +101,9 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
 
         view.findViewById(R.id.btn_save_transportdoc).setOnClickListener((v) -> createTransportDoc(view));
         view.findViewById(R.id.btn_edit_transportdoc).setOnClickListener((v) -> setEditable(true, view));
+        view.findViewById(R.id.btn_validate_transportdoc).setOnClickListener((v) -> NavHostFragment.findNavController(EditorTransportDocumentFragment.this).navigateUp());
 
-        Switch sw = view.findViewById(R.id.sw_keep_insurance_data);
+        MaterialSwitch sw = view.findViewById(R.id.sw_keep_insurance_data);
         EditText ikNumber = view.findViewById(R.id.et_ik_number);
         EditText insuranceStatus = view.findViewById(R.id.et_insurance_status);
 
@@ -174,27 +179,47 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
         //set Active TransportDoc, if given
         if(transportDocument == null)
             return view;
+
+        if(validation){
+            view.findViewById(R.id.constraint_validate).setVisibility(View.VISIBLE);
+            view.findViewById(R.id.constraint_edit).setVisibility(View.GONE);
+            view.findViewById(R.id.constraint_save).setVisibility(View.GONE);
+        }
         DataHandler handler = DataHandler.instance();
         handler.runOnNetworkThread(() -> {
-            try{
+            try {
                 TransportDocument document = handler.getTransportDocumentById(transportDocument.value());
-                if(document == null)
+                if (document == null)
                     throw new IllegalProcessException("Transport with ID " + transportDocument.value() + " not found!");
-                if(document.insuranceData().isPresent())
+                if (document.insuranceData().isPresent())
                     tempInsuranceData = handler.getInsuranceData(document.insuranceData().get().id());
+
+                Patient tempPatient;
+                try {
+                    tempPatient = document.patient().isPresent() ? handler.getPatient(document.patient().get().id()) : null;
+                } catch (Exception e){
+                    tempPatient = null;
+                }
 
                 if(getActivity() == null)
                     return;
+                Patient patient = tempPatient;
                 getActivity().runOnUiThread(() -> {
-                    if(document.patient().isPresent()){
-                        ((EditText) view.findViewById(R.id.et_insurance_number)).setText(document.patient().get().id().value());
+                    if(patient != null){
+                        ((EditText) view.findViewById(R.id.et_insurance_number)).setText(patient.insuranceNumber().value());
                         if(tempInsuranceData != null){
-                            ((Switch) view.findViewById(R.id.sw_keep_insurance_data)).setChecked(false);
+                            ((MaterialSwitch) view.findViewById(R.id.sw_keep_insurance_data)).setChecked(false);
                             ((EditText) view.findViewById(R.id.et_ik_number)).setText(tempInsuranceData.insurance().id().value());
                             ((EditText) view.findViewById(R.id.et_insurance_status)).setText(String.valueOf(tempInsuranceData.insuranceStatus()));
 
                         } else
-                            setTemporaryInsuranceData(document.patient().get().id().value(), view);
+                            setTemporaryInsuranceData(patient.insuranceNumber().value(), view);
+
+                        if(validation) {
+                            view.findViewById(R.id.ll_patient_data).setVisibility(View.VISIBLE);
+                            ((EditText) view.findViewById(R.id.et_name)).setText(String.format("%s %s", patient.firstName() , patient.lastName()));
+                            ((EditText) view.findViewById(R.id.et_birthdate)).setText(new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(patient.birthDate().getTime()));
+                        }
                     }
                     transportReasonAdapter.setActiveItem(document.transportReason());
                     ((EditText) view.findViewById(R.id.et_transport_date)).setText(new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY).format(document.startDate().getTime()));
@@ -234,7 +259,7 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
                 getActivity().runOnUiThread(() -> {
                     EditText etIKNumber = view.findViewById(R.id.et_ik_number);
                     EditText etInsuranceStatus = view.findViewById(R.id.et_insurance_status);
-                    Switch sw = view.findViewById(R.id.sw_keep_insurance_data);
+                    MaterialSwitch sw = view.findViewById(R.id.sw_keep_insurance_data);
                     if (sw.isChecked()) {
                         etIKNumber.setText(tempInsuranceData.insurance().id().value());
                         etInsuranceStatus.setText(String.valueOf(tempInsuranceData.insuranceStatus()));
@@ -255,7 +280,7 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
      */
     private void setPatientDataEditable(boolean editable, View view){
         EditText insuranceNumber = view.findViewById(R.id.et_insurance_number);
-        Switch sw = view.findViewById(R.id.sw_keep_insurance_data);
+        MaterialSwitch sw = view.findViewById(R.id.sw_keep_insurance_data);
         insuranceNumber.setEnabled(editable);
         sw.setEnabled(editable);
         view.findViewById(R.id.constraint_save).setVisibility(editable ? View.VISIBLE : View.GONE);
@@ -290,10 +315,12 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
         view.findViewById(R.id.et_end_date).setEnabled(editable);
         view.findViewById(R.id.rv_transportation_type).setEnabled(editable);
         view.findViewById(R.id.et_info).setEnabled(editable);
-        view.findViewById(R.id.constraint_save).setVisibility(editable ? View.VISIBLE : View.GONE);
-        view.findViewById(R.id.constraint_save).setEnabled(editable);
-        view.findViewById(R.id.constraint_edit).setVisibility(!editable ? View.VISIBLE : View.GONE);
-        view.findViewById(R.id.constraint_edit).setEnabled(!editable);
+        view.findViewById(R.id.constraint_save).setVisibility(editable && !validation ? View.VISIBLE : View.GONE);
+        view.findViewById(R.id.constraint_save).setEnabled(editable && !validation);
+        view.findViewById(R.id.constraint_edit).setVisibility(!editable && !validation ? View.VISIBLE : View.GONE);
+        view.findViewById(R.id.constraint_edit).setEnabled(!editable && !validation);
+        view.findViewById(R.id.constraint_validate).setVisibility(validation ? View.VISIBLE : View.GONE);
+        view.findViewById(R.id.constraint_validate).setEnabled(validation);
         transportReasonAdapter.setEditable(editable);
         transportationTypeAdapter.setEditable(editable);
         setPatientDataEditable(editable, view);
@@ -309,7 +336,6 @@ public class EditorTransportDocumentFragment extends Fragment implements SingleC
         DataHandler handler = DataHandler.instance();
         handler.runOnNetworkThread(() -> {
             boolean valid = true;
-            //TODO insuranceData!
 
             String patStr = ((EditText) view.findViewById(R.id.et_insurance_number)).getText().toString();
             String insStatusStr = ((EditText) view.findViewById(R.id.et_insurance_status)).getText().toString();

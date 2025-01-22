@@ -15,11 +15,9 @@ import android.view.ViewGroup;
 import java.util.ArrayList;
 import java.util.List;
 
-import de.ehealth.evek.api.entity.ServiceProvider;
 import de.ehealth.evek.api.entity.TransportDetails;
 import de.ehealth.evek.api.entity.TransportDocument;
 import de.ehealth.evek.api.exception.ProcessingException;
-import de.ehealth.evek.api.type.Id;
 import de.ehealth.evek.api.util.Log;
 import de.ehealth.evek.mobile.R;
 import de.ehealth.evek.mobile.core.MainActivity;
@@ -83,17 +81,19 @@ public class MainPageDoctorFragment extends Fragment implements TransportDocumen
             TransportDocumentRecyclerAdapter transportDocumentAdapter = new TransportDocumentRecyclerAdapter(getActivity(), docs);
             transportDocumentAdapter.setClickListener(this);
 
-            List<TransportRecyclerAdapter.TransportDetailsWithServiceProvider> detailsWithSP = new ArrayList<>();
-
+            List<TransportRecyclerAdapter.TransportDetailsWithTransportDocument> detailsWithSP = new ArrayList<>();
+            Exception invalid = null;
             for(TransportDetails detail : handler.getTransportDetails()){
                 try{
-                    Id<ServiceProvider> serviceProviderId = handler.getTransportDocumentById(detail.transportDocument().id()).healthcareServiceProvider().id();
-                    detailsWithSP.add(new TransportRecyclerAdapter.TransportDetailsWithServiceProvider(detail, serviceProviderId));
+                    TransportDocument transportDocument = handler.getTransportDocumentById(detail.transportDocument().id());
+                    detailsWithSP.add(new TransportRecyclerAdapter.TransportDetailsWithTransportDocument(detail, transportDocument));
                 }catch(ProcessingException e){
                     Log.sendMessage("TransportDocument not found!");
-                    detailsWithSP.add(new TransportRecyclerAdapter.TransportDetailsWithServiceProvider(detail, new Id<>("No valid service provider!")));
+                    invalid = e;
                 }
             }
+            if(invalid != null && getActivity() != null)
+                ((MainActivity) getActivity()).exceptionAlert("Fehler beim Laden von mindestens einem Transport!", invalid);
 
             TransportRecyclerAdapter transportAdapter = new TransportRecyclerAdapter(getActivity(), detailsWithSP);
             transportAdapter.setClickListener(this);
@@ -177,12 +177,11 @@ public class MainPageDoctorFragment extends Fragment implements TransportDocumen
                     handler.getUser().serviceProvider().id().value())){
                 if(obj.transporterSignature().isPresent() && obj.transporterSignatureDate().isPresent()){
                     if(obj.patientSignature().isPresent() && obj.patientSignatureDate().isPresent())
-                        ((MainActivity) getActivity()).informationAlert(getString(R.string.title_popup_illegal_operation), getString(R.string.content_popup_transport_already_signed));
+                        bundle.putBoolean("finished", true);
                     else
-                        getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_patientSignatureFragment, bundle));
-                        /*((MainActivity) getActivity()).choiceAlert("Transport validieren?", "Soll der Transport bearbeitet oder vom Patienten validiert werden?",
-                                "Bearbeiten", (dialog, which) -> getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_editorTransportUpdateFragment, bundle)),
-                                "Validieren", (dialog, which) -> getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_patientSignatureFragment, bundle)));*/
+                        bundle.putBoolean("validation", true);
+
+                    getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_editorTransportUpdateFragment, bundle));
                 }else{
                     getActivity().runOnUiThread(() -> navController.navigate(R.id.action_mainPageDoctorFragment_to_editorTransportUpdateFragment, bundle));
                 }

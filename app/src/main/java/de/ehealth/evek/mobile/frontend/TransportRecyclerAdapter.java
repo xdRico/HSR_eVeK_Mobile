@@ -13,9 +13,8 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Locale;
 
-import de.ehealth.evek.api.entity.ServiceProvider;
 import de.ehealth.evek.api.entity.TransportDetails;
-import de.ehealth.evek.api.type.Id;
+import de.ehealth.evek.api.entity.TransportDocument;
 import de.ehealth.evek.mobile.R;
 
 /**
@@ -25,18 +24,18 @@ import de.ehealth.evek.mobile.R;
  */
 public class TransportRecyclerAdapter extends RecyclerView.Adapter<TransportRecyclerAdapter.ViewHolder>{
 
-    private final List<TransportDetailsWithServiceProvider> mData;
+    private final List<TransportDetailsWithTransportDocument> mData;
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
 
     /**
-     * Record used for passing TransportDetails with a given ServiceProvider
+     * Record used for passing a {@link TransportDetails Transport} with the given {@link TransportDocument Transport Document}
      *
-     * @param transportDetails - the TransportDetails to be passed
-     * @param serviceProviderId - the ServiceProvider Id to be passed
+     * @param transportDetails - the {@link TransportDetails Transport} to be passed
+     * @param transportDocument - the {@link TransportDocument Transport Document} to be passed
      */
-    public record TransportDetailsWithServiceProvider(TransportDetails transportDetails,
-                                                      Id<ServiceProvider> serviceProviderId) {
+    public record TransportDetailsWithTransportDocument(TransportDetails transportDetails,
+                                                        TransportDocument transportDocument) {
     }
 
     /**
@@ -45,7 +44,7 @@ public class TransportRecyclerAdapter extends RecyclerView.Adapter<TransportRecy
      *
      * @param context - the current context
      * @param data - List containing the Transports with Service Provider to display
-     */    TransportRecyclerAdapter(Context context, List<TransportDetailsWithServiceProvider> data) {
+     */    TransportRecyclerAdapter(Context context, List<TransportDetailsWithTransportDocument> data) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
     }
@@ -59,16 +58,17 @@ public class TransportRecyclerAdapter extends RecyclerView.Adapter<TransportRecy
 
     @Override
     public void onBindViewHolder(@NonNull TransportRecyclerAdapter.ViewHolder holder, int position) {
-        TransportDetailsWithServiceProvider detailsWithSP = mData.get(position);
-        TransportDetails details = detailsWithSP.transportDetails();
+        TransportDetailsWithTransportDocument detailsWithDoc = mData.get(position);
+        TransportDetails details = detailsWithDoc.transportDetails();
         String transportDocument = details.transportDocument().id().value();
-        holder.healthcareServiceProvider.setText(detailsWithSP.serviceProviderId().value());
+        holder.healthcareServiceProvider.setText(detailsWithDoc.transportDocument.healthcareServiceProvider().id().value());
 
-        holder.transportServiceProvider.setText(detailsWithSP.transportDetails().transportProvider().isPresent()
-                        ? detailsWithSP.transportDetails().transportProvider().get().id().value()
+        holder.transportServiceProvider.setText(detailsWithDoc.transportDetails().transportProvider().isPresent()
+                        ? detailsWithDoc.transportDetails().transportProvider().get().id().value()
                         : "Nicht zugewiesen!");
 
         holder.details = details;
+        holder.patient.setText(detailsWithDoc.transportDocument.patient().isPresent() ? detailsWithDoc.transportDocument.patient().get().id().value() : "Kein Patient zugewiesen!");
         holder.transportDocument.setText(transportDocument);
         SimpleDateFormat formatter = new SimpleDateFormat("dd.MM.yyyy", Locale.GERMANY);
         holder.date.setText(formatter.format(details.transportDate().getTime()));
@@ -85,6 +85,7 @@ public class TransportRecyclerAdapter extends RecyclerView.Adapter<TransportRecy
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         TextView transportDocument;
+        TextView patient;
         TextView healthcareServiceProvider;
         TextView transportServiceProvider;
         TextView date;
@@ -99,6 +100,7 @@ public class TransportRecyclerAdapter extends RecyclerView.Adapter<TransportRecy
         ViewHolder(View itemView) {
             super(itemView);
             itemView.setOnClickListener(this);
+            patient = itemView.findViewById(R.id.tv_patient);
             transportDocument = itemView.findViewById(R.id.tv_transport_document);
             healthcareServiceProvider = itemView.findViewById(R.id.tv_service_provider);
             date = itemView.findViewById(R.id.tv_date);

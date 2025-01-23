@@ -273,7 +273,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
             encryptedSharedPreferences = EncryptedSharedPreferences.create(
                     ClientMain.instance().getContext(),
                     "SecurePrefs", // Name der SharedPreferences
-                    masterKey, // Der gleiche MasterKey wie beim Speichern
+                    masterKey,
                     EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                     EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             );
@@ -1088,10 +1088,11 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
             } catch(Exception e){
                 t = e;
             }
-            SharedPreferences.Editor editor = encryptedSharedPreferences.edit();
+            SharedPreferences.Editor editor;
             if(!(t instanceof UserLoggedInThrowable)) {
                 this.user = null;
                 if(validStoring){
+                    editor = encryptedSharedPreferences.edit();
                     editor.putString("eVeK-password", null);
                     editor.apply();
                 }
@@ -1111,6 +1112,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
                 }
                 if(storeNextUser){
                     if(validStoring){
+                        editor = encryptedSharedPreferences.edit();
                         editor.putString("eVeK-password", password);
                         editor.putString("eVeK-username", username);
                         editor.apply();
@@ -1168,9 +1170,11 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         if(user == null)
             throw new IllegalProcessException(new UserNotProvidedException("No user logged in!"));
         user = null;
-        SharedPreferences.Editor editor = encryptedSharedPreferences.edit();
-        editor.remove("eVeK-password");
-        editor.apply();
+        if(validStoring){
+            SharedPreferences.Editor editor = encryptedSharedPreferences.edit();
+            editor.remove("eVeK-password");
+            editor.apply();
+        }
         clearTransportCache();
         storeNextUser = false;
         try{
@@ -1193,6 +1197,7 @@ public class DataHandler implements IsLoggedInListener, IsInitializedListener{
         editor.remove("eVeK-transports");
         editor.remove("eVeK-transportdocuments");
         editor.apply();
+
     }
 
     /**

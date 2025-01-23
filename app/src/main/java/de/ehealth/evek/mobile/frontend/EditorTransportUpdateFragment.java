@@ -53,6 +53,8 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
     private Id<TransportDetails> transportID = null;
     private PatientCondition patientCondition = null;
     private SignaturePad transporterSignaturePad = null;
+    private SignaturePad patientSignaturePad = null;
+
     private boolean patientValidation = false;
     private boolean transporterValidation = false;
     private boolean finished = false;
@@ -92,30 +94,32 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
         view.findViewById(R.id.btn_edit_transportdoc).setOnClickListener((v) -> setEditable(true, view));
 
         transporterSignaturePad = view.findViewById(R.id.sp_transporter);
+        patientSignaturePad = view.findViewById(R.id.sp_patient);
 
         transporterSignaturePad.setOnSignedListener(new SignedListener() {
-
             @Override
-            public void onSigning() {
-            }
-
+            public void onSigning() {}
             @Override
-            public void onStartSigning() {
-                //validSigning = true;
-            }
-
+            public void onStartSigning() {}
             @Override
-            public void onClear() {
-                validSigning = false;
-            }
-
+            public void onClear() { validSigning = false; }
             @Override
-            public void onSigned() {
-                validSigning = true;
-            }
+            public void onSigned() { validSigning = true; }
+        });
+        patientSignaturePad.setOnSignedListener(new SignedListener() {
+            @Override
+            public void onSigning() {}
+            @Override
+            public void onStartSigning() {}
+            @Override
+            public void onClear() { validSigning = false; }
+            @Override
+            public void onSigned() { validSigning = true; }
         });
 
         view.findViewById(R.id.ib_delete_signature_transporter).setOnClickListener((v) -> transporterSignaturePad.clear());
+        view.findViewById(R.id.ib_delete_signature_patient).setOnClickListener((v) -> patientSignaturePad.clear());
+
 
         //set Active Transport, if given
         if(transportID == null)
@@ -294,6 +298,7 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
         view.findViewById(R.id.ll_patient_signature).setEnabled(patientValidation && !finished);
         patientConditionAdapter.setEditable(editableWithValidation);
         transporterSignaturePad.setEnabled(editableWithValidation || transporterValidation);
+        patientSignaturePad.setEnabled(!finished);
     }
 
     /**
@@ -409,9 +414,10 @@ public class EditorTransportUpdateFragment extends Fragment implements SingleCho
                 transportDetails = handler.getTransportDetailsById(this.transportID);
 
                 if (transportDetails != null){
-                    if(patientValidation)
-                        transportDetails = handler.updateTransportPatientSignature(transportID, transporterSignaturePad.getSignatureBitmap().toString(), new Date(System.currentTimeMillis()));
-                    else{
+                    if(patientValidation) {
+                        if (validSigning)
+                            transportDetails = handler.updateTransportPatientSignature(transportID, transporterSignaturePad.getSignatureBitmap().toString(), new Date(System.currentTimeMillis()));
+                    }else{
                         transportDetails = handler.updateTransport(transportID, tourNumber, Reference.to(startAddress.id().value()), Reference.to(endAddress.id().value()), direction, patientCondition, paymentExemption);
                         if (validSigning) {
                             TransportDetails tempTransportDetails = handler.updateTransportTransporterSignature(transportID, transporterSignaturePad.getSignatureBitmap().toString(), new Date(System.currentTimeMillis()));
